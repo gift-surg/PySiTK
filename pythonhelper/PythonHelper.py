@@ -123,9 +123,9 @@ def write_variables(variables, directory, filename, filetype=".pckl"):
     flag = f.close()
 
     if not flag:
-        print_debug_info("Variables successfully written to " + filename_out)
+        print_info("Variables successfully written to " + filename_out)
     else:
-        print_debug_info("Error: Variables could not be written")
+        print_info("Error: Variables could not be written")
 
 
 ##
@@ -146,9 +146,9 @@ def read_variables(directory, filename, filetype=".pckl"):
     flag = f.close()
 
     if not flag:
-        print_debug_info("Variables successfully read from " + filename_in)
+        print_info("Variables successfully read from " + filename_in)
     else:
-        print_debug_info("Error: Variables could not be read")
+        print_info("Error: Variables could not be read")
 
     return variables
 
@@ -217,7 +217,7 @@ def write_performed_script_execution_to_executable_file(function_call, filename)
     text_file = safe_open(filename, "w")
     text_file.write("%s" % call)
     text_file.close()
-    print_debug_info("File " + filename + " generated.")
+    print_info("File " + filename + " generated.")
 
     # Make file executable
     os.system("chmod +x " + filename)
@@ -1052,7 +1052,7 @@ def printoptions(*args, **kwargs):
     np.set_printoptions(**original)
 
 
-def print_debug_info(text, newline=True, prefix="--- "):
+def print_info(text, newline=True, prefix="--- "):
 
     # print("---- Debug info: ----")
     if newline:
@@ -1094,7 +1094,7 @@ def create_file(directory, filename, filename_extension="txt", header=""):
                             "." + filename_extension, "w")
     file_handle.write(header)
     file_handle.close()
-    print_debug_info("File " + str(directory + filename +
+    print_info("File " + str(directory + filename +
                                    "." + filename_extension) + " was created.")
 
 
@@ -1114,7 +1114,7 @@ def append_array_to_file(directory, filename, array, filename_extension="txt", f
                             "." + filename_extension, "a")
     np.savetxt(file_handle, array, fmt=format, delimiter=delimiter)
     file_handle.close()
-    print_debug_info("Array was appended to file " +
+    print_info("Array was appended to file " +
                      str(directory + filename + "." + filename_extension) + ".")
 
 
@@ -1153,7 +1153,7 @@ def create_directory(directory, delete_files=False):
     # Create directory in case it does not exist already
     if not os.path.isdir(directory):
         os.system("mkdir -p " + directory)
-        print_debug_info("Directory " + directory + " created.")
+        print_info("Directory " + directory + " created.")
 
     if delete_files:
         clear_directory(directory)
@@ -1173,12 +1173,12 @@ def clear_directory(directory):
         directory += "/"
 
     os.system("rm -rf " + directory + "*")
-    print_debug_info("All files in " + directory + " are removed.")
+    print_info("All files in " + directory + " are removed.")
 
 
 def delete_directory(directory):
     os.system("rm -rf " + directory)
-    print_debug_info("Directory " + directory + " deleted.")
+    print_info("Directory " + directory + " deleted.")
 
 
 def get_current_date_and_time_strings():
@@ -1290,7 +1290,7 @@ def write_image(nda, filename):
     nda = np.round(np.array(nda))
     im = Image.fromarray(nda)
     im.save(filename)
-    print_debug_info("Data array successfully to %s." % (filename))
+    print_info("Data array successfully to %s." % (filename))
 
 
 ##
@@ -1306,9 +1306,9 @@ def write_to_file(filename, text, access_mode="w"):
     file_handle.write(text)
     file_handle.close()
     if access_mode == "w":
-        print_debug_info("File '%s' written successfully" % (filename))
+        print_info("File '%s' written successfully" % (filename))
     elif access_mode == "a":
-        print_debug_info("File '%s' updated successfully" % (filename))
+        print_info("File '%s' updated successfully" % (filename))
 
 
 ##
