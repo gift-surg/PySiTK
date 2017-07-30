@@ -310,22 +310,23 @@ def show_niftis(paths_to_filenames, viewer="itksnap"):
 #
 def get_function_call_itksnap(filenames, filename_segmentation=None):
 
-    cmd = ITKSNAP_EXE + " "
-    cmd += "-g " + filenames[0] + " "
+    cmd = ITKSNAP_EXE + " -g \\\n"
+    cmd += filenames[0] + " \\\n"
 
     # Add overlays
     if len(filenames) > 1:
-        cmd += "-o "
+        cmd += "-o \\\n"
 
         for i in range(1, len(filenames)):
-            cmd += filenames[i] + " "
+            cmd += filenames[i] + " \\\n"
 
     # Add segmentation
     if filename_segmentation is not None:
-        cmd += "-s " + filename_segmentation + " "
+        cmd += "-s "
+        cmd += filename_segmentation + " \\\n"
 
     # Add termination
-    cmd += "& "
+    cmd += "&"
 
     return cmd
 
@@ -342,14 +343,14 @@ def get_function_call_itksnap(filenames, filename_segmentation=None):
 #
 def get_function_call_fslview(filenames, filename_segmentation=None):
 
-    cmd = FSLVIEW_EXE + " "
+    cmd = FSLVIEW_EXE + " \\\n"
     for i in range(0, len(filenames)):
-        cmd += filenames[i] + " "
+        cmd += filenames[i] + " \\\n"
 
     if filename_segmentation is not None:
-        cmd += filename_segmentation + " -t 0.3 "
+        cmd += filename_segmentation + " -t 0.3 \\\n"
 
-    cmd += "& "
+    cmd += "&"
 
     return cmd
 
@@ -366,14 +367,14 @@ def get_function_call_fslview(filenames, filename_segmentation=None):
 #
 def get_function_call_niftyview(filenames, filename_segmentation=None):
 
-    cmd = NIFTYVIEW_EXE + " "
+    cmd = NIFTYVIEW_EXE + " \\\n"
     for i in range(0, len(filenames)):
-        cmd += filenames[i] + " "
+        cmd += filenames[i] + " \\\n"
 
     if filename_segmentation is not None:
-        cmd += filename_segmentation + " "
+        cmd += filename_segmentation + " \\\n"
 
-    cmd += "& "
+    cmd += "&"
 
     return cmd
 

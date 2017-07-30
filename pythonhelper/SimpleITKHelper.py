@@ -8,7 +8,7 @@
 
 
 # Import libraries
-import os                       # used to execute terminal commands in python
+import os
 import SimpleITK as sitk
 import itk
 import numpy as np
@@ -1102,8 +1102,6 @@ def plot_slices(slices, cmap="Greys_r", title="slice"):
     ph.show_arrays(nda, cmap=cmap, title=title)
 
 
-
-
 def write_executable_file(cmds, dir_output=DIR_TMP, filename="showComparison"):
     now = datetime.datetime.now()
     date_time = str(now.year) + "-" + str(now.month).zfill(2) + \
@@ -1164,6 +1162,20 @@ def write_executable_file(cmds, dir_output=DIR_TMP, filename="showComparison"):
     call += "\n"
     for i in range(0, len(cmds)):
         cmd = cmds[i]
+
+        # for ITK-SNAP
+        cmd = re.sub('\\\\\\n-o', '\\\\\\n" + "-o ', cmd)
+
+        # put each image to new line
+        if i == 0:
+            cmd = re.sub('\\\\\\n"', '"\\\\\\n', cmd)
+            cmd = re.sub('\\\\\\n&', '"\\\\\\n + "&', cmd)
+
+        # same but add comment symbol
+        else:
+            cmd = re.sub('\\\\\\n"', '"\\\\\\n#', cmd)
+            cmd = re.sub('\\\\\\n&', '"\\\\\\n# + "&', cmd)
+
         if i is 0:
             # Use first selected viewer
             call += "cmd = " + cmd + '" '
@@ -1268,7 +1280,7 @@ def show_sitk_image(image_sitk,
     for i in range(0, len(image_sitk)):
         filenames[i] = dir_output + label[i] + ".nii.gz"
         sitk.WriteImage(image_sitk[i], filenames[i])
-        
+
     if segmentation is None:
         filename_segmentation = None
     else:
@@ -1276,7 +1288,8 @@ def show_sitk_image(image_sitk,
         sitk.WriteImage(segmentation, filename_segmentation)
 
     # Get command line to call viewer
-    cmd = eval("ph.get_function_call_" + viewer + "(filenames, filename_segmentation)")
+    cmd = eval("ph.get_function_call_" + viewer +
+               "(filenames, filename_segmentation)")
 
     # Execute command
     ph.execute_command(cmd, verbose)
@@ -1286,11 +1299,14 @@ def show_sitk_image(image_sitk,
 
         cmds = [None]*3
         ctr = 0
-        cmds[ctr] = ph.get_function_call_itksnap(filenames, filename_segmentation)
+        cmds[ctr] = ph.get_function_call_itksnap(
+            filenames, filename_segmentation)
         ctr = ctr+1
-        cmds[ctr] = ph.get_function_call_fslview(filenames, filename_segmentation)
+        cmds[ctr] = ph.get_function_call_fslview(
+            filenames, filename_segmentation)
         ctr = ctr+1
-        cmds[ctr] = ph.get_function_call_niftyview(filenames, filename_segmentation)
+        cmds[ctr] = ph.get_function_call_niftyview(
+            filenames, filename_segmentation)
         ctr = ctr+1
 
         # Build executable file containing the information
