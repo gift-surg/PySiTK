@@ -1114,7 +1114,7 @@ def write_executable_file(cmds, dir_output=DIR_TMP, filename="showComparison"):
     # Substitute commands
     for i in range(0, len(cmds)):
         cmd = cmds[i]
-        cmd = re.sub(dir_output, '" + directory + "', cmd)
+        cmd = re.sub(dir_output, '" directory + "', cmd)
         cmd = re.sub(ITKSNAP_EXE, 'ITKSNAP_EXE + "', cmd)
         cmd = re.sub(FSLVIEW_EXE, 'FSLVIEW_EXE + "', cmd)
         cmd = re.sub(NIFTYVIEW_EXE, 'NIFTYVIEW_EXE + "', cmd)
@@ -1138,43 +1138,43 @@ def write_executable_file(cmds, dir_output=DIR_TMP, filename="showComparison"):
     call += "import os"
     call += "\n"
     call += "\n"
-    call += "## Path to image data directory relative to this file:\n"
+    call += "# Path to image data directory relative to this file:\n"
     call += "directory = " + '"' + dir_output_file + '"'
     call += "\n\n"
-    call += "## Define executables:"
+    call += "# Define executables:"
     call += "\n"
-    call += "#ITKSNAP_EXE = " + '"/Applications/ITK-SNAP.app/Contents/MacOS/ITK-SNAP"'
+    call += "# ITKSNAP_EXE = " + '"/Applications/ITK-SNAP.app/Contents/MacOS/ITK-SNAP"'
     call += "\n"
-    call += "ITKSNAP_EXE = " + '"itksnap"'
+    call += "ITKSNAP_EXE = " + '"' + ITKSNAP_EXE + '"'
     call += "\n"
-    call += "#FSLVIEW_EXE = " + '"/usr/local/fsl/bin/fslview"'
+    call += "# FSLVIEW_EXE = " + '"/usr/local/fsl/bin/fsleyes"'
     call += "\n"
-    call += "FSLVIEW_EXE = " + '"fslview"'
+    call += "FSLVIEW_EXE = " + '"' + FSLVIEW_EXE + '"'
     call += "\n"
-    call += "#NIFTYVIEW_EXE = " + \
+    call += "# NIFTYVIEW_EXE = " + \
         '"/Applications/niftk-17.3.2/NiftyView.app/Contents/MacOS/NiftyView"'
     call += "\n"
-    call += "NIFTYVIEW_EXE = " + '"NiftyView"'
+    call += "NIFTYVIEW_EXE = " + '"' + NIFTYVIEW_EXE + '"'
     call += "\n"
     call += "\n"
 
-    call += "## Define commands for respective viewers:"
+    call += "# Define commands for respective viewers:"
     call += "\n"
     for i in range(0, len(cmds)):
         cmd = cmds[i]
 
         # for ITK-SNAP
-        cmd = re.sub('\\\\\\n-o', '\\\\\\n" + "-o ', cmd)
+        cmd = re.sub('\\\\\\n-o', '\\\\\\n" "-o', cmd)
 
         # put each image to new line
         if i == 0:
-            cmd = re.sub('\\\\\\n"', '"\\\\\\n', cmd)
-            cmd = re.sub('\\\\\\n&', '"\\\\\\n + "&', cmd)
+            cmd = re.sub('\\\\\\n"', '"\ncmd +=', cmd)
+            cmd = re.sub('\\\\\\n&', '"\ncmd += "&', cmd)
 
         # same but add comment symbol
         else:
-            cmd = re.sub('\\\\\\n"', '"\\\\\\n#', cmd)
-            cmd = re.sub('\\\\\\n&', '"\\\\\\n# + "&', cmd)
+            cmd = re.sub('\\\\\\n"', '"\n# cmd +=', cmd)
+            cmd = re.sub('\\\\\\n&', '"\n# cmd += "&', cmd)
 
         if i is 0:
             # Use first selected viewer
@@ -1184,11 +1184,11 @@ def write_executable_file(cmds, dir_output=DIR_TMP, filename="showComparison"):
             call += "# cmd = " + cmd + '" '
         call += "\n\n"
 
-    call += "## Execute command to open selected viewer:"
+    call += "# Execute command to open selected viewer:"
     call += "\n"
     call += "print(cmd)"
     call += "\n"
-    call += "os.system(cmd)"
+    call += "os.system(cmd)\n"
 
     # Write function call to python file
     text_file = open(dir_output + filename + ".py", "w")

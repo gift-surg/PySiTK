@@ -7,7 +7,9 @@ DIR_TMP = "/tmp/"
 
 # Linked executables
 ITKSNAP_EXE = "itksnap"
-FSLVIEW_EXE = "fslview"
+# FSLVIEW_EXE = "fslview" # deprecated in FSL 5.0.10 -> fslview_deprecated
+# FSLVIEW_EXE = "fslview_deprecated"
+FSLVIEW_EXE = "fsleyes"  # Viewer in FSL 5.0.10
 NIFTYVIEW_EXE = "NiftyView"
 BET_EXE = "bet"
 REG_ALADIN_EXE = "reg_aladin"
