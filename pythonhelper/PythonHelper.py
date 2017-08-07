@@ -441,7 +441,7 @@ def flip(items, ncol):
 #
 # \return     figure
 #
-def show_curves(y, x=None, xlabel="", ylabel="", title="", xlim=None, ylim=None, y_axis_style="plot", labels=None, label_location="best", color=None, markers=None, markevery=10, linestyle=None, label_shadow=False, label_frameon=True, label_fontsize=None, label_boundingboxtoanchor=None, label_ncol=1, linewidth=1, markerfacecolors=None, markersize=5, fontfamily="serif", fontname="Arial", use_tex=False, fontsize=12, backgroundcolor="None", aspect_ratio="auto", save_figure=False, directory=DIR_TMP, filename="figure.pdf", fig_number=None, show_compact=0, subplots_left=0.08, subplots_bottom=0.11, subplots_right=0.99, subplots_top=0.83, subplots_wspace=0, subplots_hspace=0, figuresize=None):
+def show_curves(y, x=None, xlabel="", ylabel="", title="", xlim=None, ylim=None, y_axis_style="plot", labels=None, label_location="best", color=None, markers=None, markevery=10, linestyle=None, label_shadow=False, label_frameon=True, label_fontsize=None, label_boundingboxtoanchor=None, label_ncol=1, linewidth=1, markerfacecolors=None, markersize=5, fontfamily="serif", fontname="Arial", use_tex=False, fontsize=12, backgroundcolor="None", aspect_ratio="auto", save_figure=False, directory=DIR_TMP, filename="figure.pdf", fig_number=None, show_compact=0, subplots_left=0.08, subplots_bottom=0.11, subplots_right=0.99, subplots_top=0.83, subplots_wspace=0, subplots_hspace=0, figuresize=None, block_show=False):
 
     if type(y) is not list:
         y = [y]
@@ -523,7 +523,10 @@ def show_curves(y, x=None, xlabel="", ylabel="", title="", xlim=None, ylim=None,
     plt.ylabel(ylabel)
     plt.title(title)
 
-    plt.show(block=False)
+    if block_show:
+        plt.show()
+    else:
+        plt.show(block=False)
 
     if save_figure:
         # Create directory in case it does not exist already
@@ -1081,45 +1084,6 @@ def print_line_separator(add_newline=True, symbol="*", length=99):
 
 
 ##
-# Creates a file. Possibly existing file with the same name will be
-# overwritten.
-# \date       2016-11-24 12:16:50+0000
-#
-# \param      directory           The directory
-# \param      filename            The filename
-# \param      header              The header
-# \param      filename_extension  The filename extension
-#
-def create_file(directory, filename, filename_extension="txt", header=""):
-    file_handle = safe_open(directory + filename +
-                            "." + filename_extension, "w")
-    file_handle.write(header)
-    file_handle.close()
-    print_info("File " + str(directory + filename +
-                                   "." + filename_extension) + " was created.")
-
-
-##
-# Appends an array to file.
-# \date       2016-11-24 12:17:36+0000
-#
-# \param      directory           The directory
-# \param      filename            The filename
-# \param      array               The array
-# \param      format              The format
-# \param      delimiter           The delimiter
-# \param      filename_extension  The filename extension
-#
-def append_array_to_file(directory, filename, array, filename_extension="txt", format="%.10e", delimiter="\t"):
-    file_handle = safe_open(directory + filename +
-                            "." + filename_extension, "a")
-    np.savetxt(file_handle, array, fmt=format, delimiter=delimiter)
-    file_handle.close()
-    print_info("Array was appended to file " +
-                     str(directory + filename + "." + filename_extension) + ".")
-
-
-##
 # Execute and show command in command window.
 # \date       2016-12-06 17:37:57+0000
 #
@@ -1181,6 +1145,19 @@ def delete_directory(directory):
     os.system("rm -rf " + directory)
     print_info("Directory " + directory + " deleted.")
 
+
+def get_time_stamp(separator=", "):
+    now = datetime.datetime.now()
+    time_stamp = "%s-%s-%s%s%s:%s:%s" % (
+        str(now.year),
+        str(now.month).zfill(2),
+        str(now.day).zfill(2),
+        separator,
+        str(now.hour).zfill(2),
+        str(now.minute).zfill(2),
+        str(now.second).zfill(2),
+    )
+    return time_stamp
 
 def get_current_date_and_time_strings():
     now = datetime.datetime.now()
@@ -1281,6 +1258,12 @@ def read_image(filename):
     return np.asarray(Image.open(filename))
 
 
+def read_file_line_by_line(path_to_file):
+    with open(path_to_file) as f:
+        lines = f.readlines()
+
+    return lines  
+
 ##
 # Writes data array to image file
 # \date       2017-02-10 11:18:21+0000
@@ -1298,31 +1281,32 @@ def write_image(nda, filename):
 # Write to file.
 # \date       2017-06-30 13:51:39+0100
 #
-# \param      filename  Path to filename with extension. e.g. "txt"
-# \param      text      The text
-# \param      type      "w" for write, "a" for append
+# \param      path_to_file  Path to filename with extension. e.g. "txt"
+# \param      text          The text
+# \param      access_mode   The access mode
+# \param      type  "w" for write, "a" for append
 #
-def write_to_file(filename, text, access_mode="w"):
-    file_handle = safe_open(filename, access_mode)
+def write_to_file(path_to_file, text, access_mode="w"):
+    file_handle = safe_open(path_to_file, access_mode)
     file_handle.write(text)
     file_handle.close()
     if access_mode == "w":
-        print_info("File '%s' written successfully" % (filename))
+        print_info("File '%s' successfully written" % (path_to_file))
     elif access_mode == "a":
-        print_info("File '%s' updated successfully" % (filename))
+        print_info("File '%s' successfully updated" % (path_to_file))
 
 
 ##
 # Writes a numpy array to file.
 # \date       2017-06-30 13:53:23+0100
 #
-# \param           The object
-# \param      filename  Path to filename with extension. e.g. "txt"
-# \param      array      Numpy array
-# \param      format     The format
-# \param      delimiter  The delimiter
+# \param      path_to_file  Path to filename with extension. e.g. "txt"
+# \param      array         Numpy array
+# \param      format        The format
+# \param      delimiter     The delimiter
+# \param      access_mode   The access mode
 #
-def write_array_to_file(filename, array, format="%.10e", delimiter="\t", access_mode="a"):
-    file_handle = safe_open(filename, access_mode)
+def write_array_to_file(path_to_file, array, format="%.10e", delimiter="\t", access_mode="a"):
+    file_handle = safe_open(path_to_file, access_mode)
     np.savetxt(file_handle, array, fmt=format, delimiter=delimiter)
     file_handle.close()

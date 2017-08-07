@@ -464,22 +464,26 @@ def read_itk_image(filename, pixel_type=itk.D, dim=3):
 #
 # \return     (Multi-component) sitk.Image object
 #
-def read_sitk_vector_image(filename, return_vector_index=None):
+def read_sitk_vector_image(filename, dtype=np.float64):
 
     # Workaround: Read vector image via nibabel
     image_nib = nib.load(filename)
     nda_nib = image_nib.get_data()
     nda_nib_shape = nda_nib.shape
-    nda = np.zeros((nda_nib_shape[2], nda_nib_shape[
-                   1], nda_nib_shape[0], nda_nib_shape[3]))
+    nda = np.zeros((nda_nib_shape[2],
+                    nda_nib_shape[1],
+                    nda_nib_shape[0],
+                    nda_nib_shape[3]),
+                   dtype=dtype)
 
-    # Convert to (Simple)ITK data array format, i.e. reorder to z-y-x shape
+    # Convert to (Simple)ITK data array format, i.e. reorder to
+    # z-y-x-components shape
     for i in range(0, nda_nib_shape[2]):
         for k in range(0, nda_nib_shape[0]):
             nda[i, :, k, :] = nda_nib[k, :, i, :]
 
     # Get SimpleITK image
-    image_sitk = sitk.GetImageFromArray(nda)
+    vector_image_sitk = sitk.GetImageFromArray(nda)
 
     # Workaround: Update header from nibabel information
     R = np.array([
@@ -499,14 +503,11 @@ def read_sitk_vector_image(filename, return_vector_index=None):
     t_nib = affine_nib[0:-1, 3]
     origin_sitk = R.dot(t_nib)
 
-    image_sitk.SetSpacing(np.array(spacing_sitk).astype('double'))
-    image_sitk.SetDirection(direction_sitk)
-    image_sitk.SetOrigin(origin_sitk)
+    vector_image_sitk.SetSpacing(np.array(spacing_sitk).astype('double'))
+    vector_image_sitk.SetDirection(direction_sitk)
+    vector_image_sitk.SetOrigin(origin_sitk)
 
-    if return_vector_index is None:
-        return image_sitk
-    else:
-        return sitk.VectorIndexSelectionCast(image_sitk, return_vector_index)
+    return vector_image_sitk
 
     # All the other stuff did not work (neither in ITK nor in SimpleITK)! See
     # below. Readings worked but the two components always contained the same
@@ -519,6 +520,87 @@ def read_sitk_vector_image(filename, return_vector_index=None):
     # reader.SetFileName(DIR_INPUT + filename_ref + ".nii")
     # reader.Update()
     # foo_itk = reader.GetOutput()
+
+
+##
+# Extract single component from vector image
+# \date       2017-08-06 16:58:57+0100
+#
+# \param      vector_image_sitk  Vector image as sitk.Image
+# \param      component          Index/Component of vector image to be
+#                                  returned.
+#
+# \return     Component of vector image returned as sitk.Image
+#
+def extract_component_from_vector_image(vector_image_sitk, component):
+    return sitk.VectorIndexSelectionCast(vector_image_sitk, component)
+
+
+##
+# Gets the sitk vector image from single components.
+# \date       2017-08-06 17:01:17+0100
+#
+# \param      image_components_sitk  List of individual sitk.Image objects
+#                                    which shall be combined to vector image
+#
+# \return     Multi-component sitk.Image object.
+#
+def get_sitk_vector_image_from_components(image_components_sitk):
+
+    N_components = len(image_components_sitk)
+    shape = image_components_sitk[0].GetSize()
+
+    vector_image_nda = np.zeros((shape[2], shape[1], shape[0], N_components))
+    for i in range(N_components):
+        vector_image_nda[:, :, :, i] = sitk.GetArrayFromImage(
+            image_components_sitk[i])
+
+    vector_image_sitk = sitk.GetImageFromArray(vector_image_nda)
+
+    vector_image_sitk.SetSpacing(image_components_sitk[0].GetSpacing())
+    vector_image_sitk.SetDirection(image_components_sitk[0].GetDirection())
+    vector_image_sitk.SetOrigin(image_components_sitk[0].GetOrigin())
+
+    return vector_image_sitk
+
+
+##
+# Writes a sitk vector image.
+# \date       2017-08-06 18:18:06+0100
+#
+# \param      vector_image_sitk  Vector image as sitk.Object
+# \param      filename           filename path to write image ("nii" or
+#                                ".nii.gz")
+#
+def write_sitk_vector_image(vector_image_sitk, filename):
+    R = np.array([
+        [-1, 0, 0],
+        [0, -1, 0],
+        [0, 0, 1]])
+    origin_sitk = vector_image_sitk.GetOrigin()
+    direction_sitk = vector_image_sitk.GetDirection()
+    spacing_sitk = vector_image_sitk.GetSpacing()
+
+    t_nib = R.dot(origin_sitk)
+    R_nib = R.dot(np.array(direction_sitk).reshape(
+        3, 3)).dot(np.diag(spacing_sitk))
+
+    A_nib = np.eye(4)
+    A_nib[0:-1, 3] = t_nib
+    A_nib[0:-1, 0:-1] = R_nib
+
+    nda = sitk.GetArrayFromImage(vector_image_sitk)
+    shape = nda.shape
+    nda_nib = np.zeros((shape[2], shape[1], shape[0], shape[3]))
+
+    # Convert to Nibabel data array format, i.e. reorder to x-y-z-components
+    # shape
+    for i in range(0, nda.shape[2]):
+        for k in range(0, nda.shape[0]):
+            nda_nib[i, :, k, :] = nda[k, :, i, :]
+
+    image_nib = nib.Nifti1Pair(nda_nib, A_nib)
+    nib.save(image_nib, filename)
 
 
 #
