@@ -601,6 +601,7 @@ def write_sitk_vector_image(vector_image_sitk, filename):
 
     image_nib = nib.Nifti1Pair(nda_nib, A_nib)
     nib.save(image_nib, filename)
+    ph.print_info("Image is successfully written to '%s'." % (filename))
 
 
 #

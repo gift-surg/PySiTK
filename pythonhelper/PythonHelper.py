@@ -994,16 +994,15 @@ def start_timing():
 
 
 ##
-# Adds times obtained by start and stop timing
-# \date       2017-06-08 15:38:27+0100
+# Gets value representing zero for datetime objects.
+# \date       2017-08-08 16:25:05+0100
 #
-# \param      time_1  time obtained by stop_timing
-# \param      time_2  The time 2
+# \param      self  The object
 #
-# \return     added time
+# \return     The zero time.
 #
-def add_times(time_1, time_2):
-    return time_1 + time_2
+def get_zero_time(self):
+    return datetime.timedelta(seconds=0)
 
 
 ##
@@ -1058,12 +1057,11 @@ def printoptions(*args, **kwargs):
 
 def print_info(text, newline=True, prefix="--- "):
 
-    # print("---- Debug info: ----")
     if newline:
         print(prefix + text)
     else:
         sys.stdout.write(prefix + text)
-    # print("---------------------------")
+        sys.stdout.flush()
 
 
 def print_title(text, symbol="*", add_newline=False):
@@ -1130,42 +1128,89 @@ def create_directory(directory, delete_files=False):
 # Clear all data in given directory
 # \date       2017-02-02 16:47:15+0000
 #
-# \param      directory  The directory
+# \param      directory  The directory to be cleared
+# \param      verbose    The verbose
 #
-def clear_directory(directory):
+def clear_directory(directory, verbose=True):
 
     if directory[-1] not in ["/"]:
         directory += "/"
 
     os.system("rm -rf " + directory + "*")
-    print_info("All files in " + directory + " are removed.")
+    if verbose:
+        print_info("All files in " + directory + " are removed.")
 
 
-def delete_directory(directory):
+##
+# Delete directory
+# \date       2017-08-08 16:37:03+0100
+#
+# \param      directory  The directory to be deleted
+# \param      verbose    The verbose
+#
+def delete_directory(directory, verbose=True):
     os.system("rm -rf " + directory)
-    print_info("Directory " + directory + " deleted.")
+    if verbose:
+        print_info("Directory " + directory + " deleted.")
 
 
-def get_time_stamp(separator=", "):
+##
+# Gets the current date in format year, month and day
+# \date       2017-08-08 16:34:17+0100
+#
+# \param      separator  separator between year, month and day; string
+#
+# \return     The current date as string
+#
+def get_current_date(separator=""):
     now = datetime.datetime.now()
-    time_stamp = "%s-%s-%s%s%s:%s:%s" % (
+    date = "%s%s%s%s%s" % (
         str(now.year),
-        str(now.month).zfill(2),
-        str(now.day).zfill(2),
         separator,
+        str(now.month).zfill(2),
+        separator,
+        str(now.day).zfill(2),
+    )
+    return date
+
+
+##
+# Gets the current time in format hour, minute and second
+# \date       2017-08-08 16:34:17+0100
+#
+# \param      separator  separator between hour, minute and second; string
+#
+# \return     The current time as string
+#
+def get_current_time(separator=""):
+    now = datetime.datetime.now()
+    time = "%s%s%s%s%s" % (
         str(now.hour).zfill(2),
+        separator,
         str(now.minute).zfill(2),
+        separator,
         str(now.second).zfill(2),
     )
+    return time
+
+
+##
+# Gets the time stamp in format year, month, day, hour, minute and second
+# \date       2017-08-08 16:35:37+0100
+#
+# \param      separator       separator between date and time; string
+# \param      separator_date  separator in between date information; string
+# \param      separator_time  separator in between time information; string
+#
+# \return     The time stamp.
+#
+def get_time_stamp(separator=", ", separator_date="-", separator_time=":"):
+    time_stamp = "%s%s%s" % (
+        get_current_date(separator=separator_date),
+        separator,
+        get_current_time(separator=separator_time),
+    )
     return time_stamp
-
-def get_current_date_and_time_strings():
-    now = datetime.datetime.now()
-    date = str(now.year) + str(now.month).zfill(2) + str(now.day).zfill(2)
-    time = str(now.hour).zfill(2) + str(now.minute).zfill(2) + \
-        str(now.second).zfill(2)
-
-    return date, time
 
 
 ##
@@ -1262,7 +1307,7 @@ def read_file_line_by_line(path_to_file):
     with open(path_to_file) as f:
         lines = f.readlines()
 
-    return lines  
+    return lines
 
 ##
 # Writes data array to image file
@@ -1270,6 +1315,8 @@ def read_file_line_by_line(path_to_file):
 #
 # \param      filename  The filename including filename extension
 #
+
+
 def write_image(nda, filename):
     nda = np.round(np.array(nda))
     im = Image.fromarray(nda)
