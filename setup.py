@@ -26,6 +26,13 @@ setup(name='PythonHelper',
       author_email='michael.ebner.14@ucl.ac.uk',
       license='MIT',
       packages=['pythonhelper'],
+      install_requires=[
+          "SimpleITK",
+          "numpy",
+          "nibabel",
+          "matplotlib",
+          "Pillow",
+      ],
       zip_safe=False,
       keywords='development ITK SimpleITK',
       classifiers=[
@@ -40,7 +47,7 @@ setup(name='PythonHelper',
           'Topic :: Software Development :: Build Tools',
 
           # Pick your license as you wish (should match "license" above)
-           'License :: OSI Approved :: MIT License',
+          'License :: OSI Approved :: MIT License',
 
           # Specify the Python versions you support here. In particular, ensure
           # that you indicate whether you support Python 2, Python 3 or both.

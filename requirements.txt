@@ -1,6 +1,5 @@
 nibabel==2.0.2
-setuptools==36.0.1
 matplotlib==2.0.2
 numpy==1.13.1
 Pillow==4.2.1
-SimpleITK==1.0.0
+SimpleITK==1.0.1

@@ -150,7 +150,7 @@ def get_sitk_image_origin_from_sitk_affine_transform(affine_transform_sitk,
     Important: Only tested for center=\0! Not clear how it shall be implemented,
             cf. Johnson2015a on page 551 vs page 107!
 
-    Mostly outcome of application of get_composite_sitk_affine_transform and first transform_inner is image. 
+    Mostly outcome of application of get_composite_sitk_affine_transform and first transform_inner is image.
     Therefore, center_composite is always zero on tested functions so far
     """
     # dim = len(image_sitk.GetSize())
@@ -412,7 +412,9 @@ def get_transformed_sitk_image(image_init_sitk, transform_sitk):
 
     transform_sitk = get_composite_sitk_affine_transform(
         transform_sitk, affine_transform_sitk)
-    # transform_sitk = get_composite_sitk_affine_transform(get_inverse_of_sitk_rigid_registration_transform(affine_transform_sitk), affine_transform_sitk)
+    # transform_sitk =
+    # get_composite_sitk_affine_transform(get_inverse_of_sitk_rigid_registration_transform(affine_transform_sitk),
+    # affine_transform_sitk)
 
     direction = get_sitk_image_direction_from_sitk_affine_transform(
         transform_sitk, image_sitk)
@@ -941,6 +943,35 @@ def get_sitk_from_itk_Euler3DTransform(Euler3DTransform_itk):
     return Euler3DTransform_sitk
 
 
+def get_sitk_from_itk_transform(transform_itk):
+    dimension = transform_itk.GetInputSpaceDimension()
+
+    if transform_itk.GetNameOfClass() == "AffineTransform":
+        transform_sitk = sitk.AffineTransform(dimension)
+    else:
+        transform_sitk = eval("sitk.%s()" % (transform_itk.GetNameOfClass()))
+
+    parameters_itk = transform_itk.GetParameters()
+    fixed_parameters_itk = transform_itk.GetFixedParameters()
+
+    N_params = parameters_itk.GetNumberOfElements()
+    N_fixedparams = fixed_parameters_itk.GetNumberOfElements()
+
+    parameters_sitk = np.zeros(N_params)
+    fixed_parameters_sitk = np.zeros(N_fixedparams)
+
+    for i in range(0, N_params):
+        parameters_sitk[i] = parameters_itk.GetElement(i)
+
+    for i in range(0, N_fixedparams):
+        fixed_parameters_sitk[i] = fixed_parameters_itk.GetElement(i)
+
+    transform_sitk.SetParameters(parameters_sitk)
+    transform_sitk.SetFixedParameters(fixed_parameters_sitk)
+
+    return transform_sitk
+
+
 ##
 # Convert itk.AffineTransform to sitk.AffineTransform instance
 # \date       2017-06-26 16:58:14+0100
@@ -1086,7 +1117,8 @@ def print_sitk_transform(rigid_affine_similarity_transform_sitk, text=None):
                   sitk.Euler3DTransform):
         print("\t\t\tangle_x, angle_y, angle_z = " +
               str(parameters[0:3]) + " rad")
-        # print("\t\t\tangle_x, angle_y, angle_z = " + str(parameters[0:3]*180/np.pi) + " deg")
+        # print("\t\t\tangle_x, angle_y, angle_z = " +
+        # str(parameters[0:3]*180/np.pi) + " deg")
 
     elif isinstance(rigid_affine_similarity_transform_sitk,
                     sitk.Euler2DTransform):
@@ -1353,7 +1385,8 @@ def show_sitk_image(image_sitk,
             image_sitk[i] = sitk.Resample(
                 image_sitk[i],
                 image_sitk[0],
-                sitk.Euler3DTransform(),
+                eval("sitk.Euler%dDTransform()" %
+                     (image_sitk[0].GetDimension())),
                 eval("sitk.sitk" + interpolator),
                 default_pixel_value_sitk)
             label[i] += "_" + interpolator

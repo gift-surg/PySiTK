@@ -1001,7 +1001,7 @@ def start_timing():
 #
 # \return     The zero time.
 #
-def get_zero_time(self):
+def get_zero_time():
     return datetime.timedelta(seconds=0)
 
 
@@ -1107,7 +1107,7 @@ def execute_command(cmd, verbose=True):
 # \param      directory     The directory
 # \param      delete_files  The delete files
 #
-def create_directory(directory, delete_files=False):
+def create_directory(directory, delete_files=False, verbose=False):
 
     # Add slash in case not existing
     if directory[-1] not in ["/"]:
@@ -1116,10 +1116,11 @@ def create_directory(directory, delete_files=False):
     # Create directory in case it does not exist already
     if not os.path.isdir(directory):
         os.system("mkdir -p " + directory)
-        print_info("Directory " + directory + " created.")
+        if verbose:
+            print_info("Directory " + directory + " created.")
 
     if delete_files:
-        clear_directory(directory)
+        clear_directory(directory, verbose=verbose)
 
     return directory
 
