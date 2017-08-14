@@ -33,17 +33,16 @@ os.environ['SITK_SHOW_COMMAND'] = ITKSNAP_EXE
 
 
 ##
-# AddTransform does not work! Python always crashes! Moreover, the composition
-# of AddTransform is stack based, i.e. first in -- last applied. Wtf!?
-# \param[in]  sitk::simple::AffineTransform  or EulerxDTransform for inner and
-#                                            outer transform
-# \see        http://insightsoftwareconsortium.github.io/SimpleITK-Notebooks/22_Transforms.html
+# Get composite transform of two affine/euler sitk transforms
+# \see        http://insightsoftwareconsortium.github.io/SimpleITK-Notebooks/Python_html/22_Transforms.html
+# \date       2017-08-14 11:51:32+0100
+#
+# \param      transform_outer  The transform outer
+# \param      transform_inner  The transform inner
+#
+# \return     The composite sitk affine/euler transform.
 #
 def get_composite_sitk_affine_transform(transform_outer, transform_inner):
-
-    # Guarantee type sitk::simple::AffineTransform of transformations
-    # transform_outer = sitk.AffineTransform(transform_outer)
-    # transform_inner = sitk.AffineTransform(transform_inner)
 
     dim = transform_outer.GetDimension()
 
@@ -60,14 +59,18 @@ def get_composite_sitk_affine_transform(transform_outer, transform_inner):
     t_composite = A_outer.dot(
         t_inner + c_inner - c_outer) + t_outer + c_outer - c_inner
 
-    # appropriate_transform needs to be the "biggest" of inner and outer trafo
-    # composite_transform = sitk.Transform(appropriate_transform)
-    # composite_transform.SetMatrix(A_composite)
-    # composite_transform.SetCenter(c_composite)
-    # composite_transform.SetTranslation(t_composite)
-    # return composite_transform
+    if transform_outer.GetName() == "AffineTransform" \
+            or transform_inner.GetName() == "AffineTransform" \
+            or transform_outer.GetName() != transform_inner.GetName():
+        trafo = sitk.AffineTransform(dim)
+    else:
+        trafo = eval("sitk." + transform_outer.GetName() + "()")
 
-    return sitk.AffineTransform(A_composite.flatten(), t_composite, c_composite)
+    trafo.SetMatrix(A_composite.flatten())
+    trafo.SetTranslation(t_composite)
+    trafo.SetCenter(c_composite)
+
+    return trafo
 
 
 ##
