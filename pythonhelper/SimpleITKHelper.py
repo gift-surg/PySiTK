@@ -1241,14 +1241,14 @@ def write_executable_file(cmds, dir_output=DIR_TMP, filename="showComparison"):
     call = "#!/usr/bin/python\n"
     call += "\n"
     call += "##\n"
-    call += "#  \\file\t" + "showComparison.py\n"
+    call += "#  \\file " + "showComparison.py\n"
     call += "#  \\brief\t" + \
-        "Execute './showComparison.py' for a visual comparison of all images.\n"
+        "Execute 'showComparison.py' for a visual comparison of all images\n"
     call += "#\n"
-    call += "#  \t\t\tThree different viewers can be selected:\n"
-    call += "#  \t\t\t- ITK-SNAP (default): http://www.itksnap.org/\n"
-    call += "#  \t\t\t- FSLView: https://fsl.fmrib.ox.ac.uk/\n"
-    call += "#  \t\t\t- NiftyView: http://cmictig.cs.ucl.ac.uk/research/software/software-nifty\n"
+    call += "#  Three different viewers can be selected:\n"
+    call += "#  - ITK-SNAP (default): http://www.itksnap.org/\n"
+    call += "#  - FSL: https://fsl.fmrib.ox.ac.uk/\n"
+    call += "#  - NiftyView: http://cmictig.cs.ucl.ac.uk/research/software/software-nifty\n"
     call += "#\n"
     call += "#  \\author\t" + "Michael Ebner (michael.ebner.14@ucl.ac.uk)\n"
     call += "#  \\date\t" + date_time + "\n"
@@ -1404,6 +1404,20 @@ def show_sitk_image(image_sitk,
         filename_segmentation = None
     else:
         filename_segmentation = dir_output + label_segmentation + ".nii.gz"
+
+        # In case images are not in the same physical space, resample them
+        try:
+            sitk.Cast(segmentation,
+                      image_sitk[0].GetPixelIDValue()) - image_sitk[0]
+        except:
+            segmentation = sitk.Resample(
+                segmentation,
+                image_sitk[0],
+                eval("sitk.Euler%dDTransform()" %
+                     (image_sitk[0].GetDimension())),
+                sitk.sitkNearestNeighbor,
+                0)
+
         sitk.WriteImage(segmentation, filename_segmentation)
 
     # Get command line to call viewer
