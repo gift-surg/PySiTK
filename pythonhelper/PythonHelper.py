@@ -441,7 +441,7 @@ def flip(items, ncol):
 #
 # \return     figure
 #
-def show_curves(y, x=None, xlabel="", ylabel="", title="", xlim=None, ylim=None, y_axis_style="plot", labels=None, label_location="best", color=None, markers=None, markevery=10, linestyle=None, label_shadow=False, label_frameon=True, label_fontsize=None, label_boundingboxtoanchor=None, label_ncol=1, linewidth=1, markerfacecolors=None, markersize=5, fontfamily="serif", fontname="Arial", use_tex=False, fontsize=12, backgroundcolor="None", aspect_ratio="auto", save_figure=False, directory=DIR_TMP, filename="figure.pdf", fig_number=None, show_compact=0, subplots_left=0.08, subplots_bottom=0.11, subplots_right=0.99, subplots_top=0.83, subplots_wspace=0, subplots_hspace=0, figuresize=None, block_show=False):
+def show_curves(y, x=None, xlabel="", ylabel="", title="", xlim=None, ylim=None, y_axis_style="plot", labels=None, label_location="best", color=None, markers=None, markevery=10, linestyle=None, label_shadow=False, label_frameon=True, label_fontsize=None, label_boundingboxtoanchor=None, label_ncol=1, linewidth=1, markerfacecolors=None, markersize=5, fontfamily="serif", fontname="Arial", use_tex=False, fontsize=12, backgroundcolor="None", aspect_ratio="auto", save_figure=False, directory=None, filename="figure.pdf", fig_number=None, show_compact=0, subplots_left=0.08, subplots_bottom=0.11, subplots_right=0.99, subplots_top=0.83, subplots_wspace=0, subplots_hspace=0, figuresize=None, block_show=False):
 
     if type(y) is not list:
         y = [y]
@@ -657,16 +657,34 @@ def show_images(images, titles=None, cmap="Greys_r", use_colorbar=False, fontfam
 # Shows single 2D/3D array or a list of 2D arrays.
 # \date       2017-02-07 10:06:25+0000
 #
-# \param      nda         Either 2D/3D numpy array or list of 2D numpy arrays #
-# \param      title       The title of the figure
-# \param      cmap        Color map "Greys_r", "jet", etc.
-# \param      colorbar    The colorbar
-# \param      directory   In case given, figure will be saved to this directory
-# \param      save_type   Filename extension of figure in case it is saved
-# \param      fig_number  Figure number. If 'None' previous figure will not be
-#                         closed
+# \param      nda               Either 2D/3D numpy array or list of 2D numpy
+#                               arrays #
+# \param      title             The title of the figure
+# \param      cmap              Color map "Greys_r", "jet", etc.
+# \param      use_colorbar      The colorbar
+# \param      directory         In case given, figure will be saved to this
+#                               directory
+# \param      filename          The filename
+# \param      save_figure       Filename extension of figure in case it is
+#                               saved
+# \param      fig_number        Figure number. If 'None' previous figure will
+#                               not be closed
+# \param      use_same_scaling  The use same scaling
+# \param      fontsize          The fontsize
+# \param      fontname          "Arial", "Times New Roman" etc
 #
-def show_arrays(nda, title=None, cmap="Greys_r", use_colorbar=False, directory=None, fig_number=None, use_same_scaling=False):
+def show_arrays(nda,
+                title=None,
+                cmap="Greys_r",
+                use_colorbar=False,
+                directory=None,
+                filename=None,
+                save_figure=0,
+                fig_number=None,
+                use_same_scaling=False,
+                fontsize=None,
+                fontname="Arial",
+                ):
 
     # Show list of 2D arrays slice by slice
     if type(nda) is list:
@@ -677,7 +695,11 @@ def show_arrays(nda, title=None, cmap="Greys_r", use_colorbar=False, directory=N
             colorbar=use_colorbar,
             fig_number=fig_number,
             directory=directory,
+            filename=filename,
+            save_figure=save_figure,
             use_same_scaling=use_same_scaling,
+            fontsize=fontsize,
+            fontname=fontname,
         )
 
     # Show single 2D/3D array
@@ -838,18 +860,20 @@ def _show_2D_array_list_array_by_array(nda2D_list,
                                        colorbar=False,
                                        fig_number=None,
                                        directory=None,
+                                       filename=None,
+                                       save_figure=0,
                                        axis_aspect='equal',
                                        use_same_scaling=False,
+                                       fontsize=8,
+                                       fontname="Arial",
                                        ):
 
-    # my_fontname = "Arial"
-    my_fontname = "Times New Roman"
     title_font = {
-        'fontname': my_fontname,
-        'size': '8',
-        'color': 'black',
-        'weight': 'normal',
-        'verticalalignment': 'center'  # Bottom vertical alignment for more space
+        'fontname': fontname,
+        'size': fontsize,
+        # 'color': 'black',
+        # 'weight': 'normal',
+        # 'verticalalignment': 'center'  # Bottom vertical alignment for more space
     }
 
     shape = nda2D_list[0].shape
@@ -897,7 +921,7 @@ def _show_2D_array_list_array_by_array(nda2D_list,
             if i < len(title):
                 plt.title(
                     title[i],
-                    # **title_font,
+                    **title_font
                 )
         plt.axis('off')
         if colorbar:
@@ -905,21 +929,14 @@ def _show_2D_array_list_array_by_array(nda2D_list,
             cax = fig.add_axes([0.92, 0.05, 0.01, 0.9])
             fig.colorbar(im, cax=cax)
 
-    # plt.subplots_adjust(wspace=0, hspace=0, left=0,
+    # plt.subplots_adjust(wspace=0.01, hspace=0.1, left=0,
     #                     right=1, bottom=0, top=None)
-
     print("Slices of data arrays are shown in separate window.")
     plt.show(block=False)
 
-    # If directory is given: Save
-    if directory is not None:
+    if save_figure:
         # Create directory in case it does not exist already
         create_directory(directory)
-
-        filename = title[0]
-        for i in range(1, N_slices):
-            if i < len(title):
-                filename += "_" + title[i]
 
         # Save figure to directory
         _save_figure(fig, directory, filename)
@@ -972,7 +989,7 @@ def _save_figure(fig, directory, filename):
         directory += "/"
 
     fig.savefig(directory + filename)
-    print("Figure was saved to " + directory + filename)
+    print_info("Figure was saved to " + directory + filename)
 
 
 ##
@@ -1310,14 +1327,13 @@ def read_file_line_by_line(path_to_file):
 
     return lines
 
+
 ##
 # Writes data array to image file
 # \date       2017-02-10 11:18:21+0000
 #
 # \param      filename  The filename including filename extension
 #
-
-
 def write_image(nda, filename):
     nda = np.round(np.array(nda))
     im = Image.fromarray(nda)
@@ -1358,3 +1374,7 @@ def write_array_to_file(path_to_file, array, format="%.10e", delimiter="\t", acc
     file_handle = safe_open(path_to_file, access_mode)
     np.savetxt(file_handle, array, fmt=format, delimiter=delimiter)
     file_handle.close()
+    if access_mode == "w":
+        print_info("File '%s' successfully written" % (path_to_file))
+    elif access_mode == "a":
+        print_info("File '%s' successfully updated" % (path_to_file))
