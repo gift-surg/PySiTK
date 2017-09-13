@@ -1335,10 +1335,10 @@ def read_file_line_by_line(path_to_file):
 # \param      filename  The filename including filename extension
 #
 def write_image(nda, filename):
-    nda = np.round(np.array(nda))
+    nda = np.round(np.array(nda)).astype(np.uint8)
     im = Image.fromarray(nda)
     im.save(filename)
-    print_info("Data array successfully to %s." % (filename))
+    print_info("Data array written to %s." % (filename))
 
 
 ##
@@ -1355,9 +1355,9 @@ def write_to_file(path_to_file, text, access_mode="w"):
     file_handle.write(text)
     file_handle.close()
     if access_mode == "w":
-        print_info("File '%s' successfully written" % (path_to_file))
+        print_info("File '%s' written" % (path_to_file))
     elif access_mode == "a":
-        print_info("File '%s' successfully updated" % (path_to_file))
+        print_info("File '%s' updated" % (path_to_file))
 
 
 ##
