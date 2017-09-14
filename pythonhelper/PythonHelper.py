@@ -244,6 +244,22 @@ def killall_itksnap():
 
 
 ##
+# Adds one to variable by taking advantage of pass by reference of list objects
+#
+# Idea is to use it for consecutive numbering, e.g. to generate batch jobs
+# \date       2017-09-14 20:32:43+0100
+#
+# \param      x     list with one integer element, e.g. [0]
+# \post       x integer element incremented by one
+#
+# \return     incremented integer value of list
+#
+def add_one(x):
+    x[0] += 1
+    return x[0]
+
+
+##
 # Open ITK-SNAP for given filename
 # \date       2017-07-06 12:34:12+0100
 #
@@ -984,12 +1000,11 @@ def _get_grid_size(N_slices):
 #
 def _save_figure(fig, directory, filename):
 
-    # Add backslash if not given
-    if directory[-1] is not "/":
-        directory += "/"
+    create_directory(directory)
 
-    fig.savefig(directory + filename)
-    print_info("Figure was saved to " + directory + filename)
+    path_to_file = os.path.join(directory, filename)
+    fig.savefig(path_to_file)
+    print_info("Figure was saved to %s" % path_to_file)
 
 
 ##
@@ -1107,7 +1122,15 @@ def print_line_separator(add_newline=True, symbol="*", length=99):
 #
 # \return     { description_of_the_return_value }
 #
-def execute_command(cmd, verbose=True):
+def execute_command(cmd,
+                    verbose=True,
+                    flag_print_to_file=False,
+                    path_to_file=None):
+
+    if flag_print_to_file:
+        write_to_file(path_to_file, cmd, verbose=verbose)
+        return
+
     if verbose:
         print("")
         print("---- Executed command: ----")
@@ -1132,7 +1155,7 @@ def create_directory(directory, delete_files=False, verbose=False):
 
     # Create directory in case it does not exist already
     if not os.path.isdir(directory):
-        os.system("mkdir -p " + directory)
+        os.makedirs(directory)
         if verbose:
             print_info("Directory " + directory + " created.")
 
@@ -1350,14 +1373,15 @@ def write_image(nda, filename):
 # \param      access_mode   The access mode
 # \param      type  "w" for write, "a" for append
 #
-def write_to_file(path_to_file, text, access_mode="w"):
+def write_to_file(path_to_file, text, access_mode="w", verbose=True):
     file_handle = safe_open(path_to_file, access_mode)
     file_handle.write(text)
     file_handle.close()
-    if access_mode == "w":
-        print_info("File '%s' written" % (path_to_file))
-    elif access_mode == "a":
-        print_info("File '%s' updated" % (path_to_file))
+    if verbose:
+        if access_mode == "w":
+            print_info("File '%s' written" % (path_to_file))
+        elif access_mode == "a":
+            print_info("File '%s' updated" % (path_to_file))
 
 
 ##

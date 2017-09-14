@@ -1220,7 +1220,8 @@ def plot_slices(slices, cmap="Greys_r", title="slice"):
     ph.show_arrays(nda, cmap=cmap, title=title)
 
 
-def write_executable_file(cmds, dir_output=DIR_TMP, filename="showComparison"):
+def write_executable_file(cmds,
+                          dir_output=DIR_TMP, filename="showComparison.py"):
     now = datetime.datetime.now()
     date_time = str(now.year) + "-" + str(now.month).zfill(2) + \
         "-" + str(now.day).zfill(2) + " "
@@ -1309,14 +1310,14 @@ def write_executable_file(cmds, dir_output=DIR_TMP, filename="showComparison"):
     call += "os.system(cmd)\n"
 
     # Write function call to python file
-    text_file = open(dir_output + filename + ".py", "w")
+    text_file = open(dir_output + filename, "w")
     text_file.write("%s" % call)
     text_file.close()
 
-    print("File " + dir_output + filename + ".py generated.")
+    print_info("File " + dir_output + filename + " generated.")
 
     # Make python file executable
-    os.system("chmod +x " + dir_output + filename + ".py")
+    os.system("chmod +x " + dir_output + filename)
 
 
 ##
@@ -1343,6 +1344,7 @@ def show_sitk_image(image_sitk,
                     label="test",
                     segmentation=None,
                     show_comparison_file=False,
+                    name_comparison_file="showComparison.py",
                     viewer="itksnap",
                     verbose=True,
                     interpolator="Linear",
@@ -1444,7 +1446,7 @@ def show_sitk_image(image_sitk,
 
         # Build executable file containing the information
         write_executable_file(cmds, dir_output=dir_output,
-                              filename="showComparison")
+                              filename=name_comparison_file)
 
 
 ##
@@ -1468,6 +1470,7 @@ def show_stacks(stacks,
                 label=None,
                 segmentation=None,
                 show_comparison_file=False,
+                name_comparison_file="showComparison.py",
                 viewer="itksnap",
                 dir_output=DIR_TMP,
                 default_pixel_value=0):
@@ -1493,6 +1496,7 @@ def show_stacks(stacks,
                     label=label,
                     segmentation=segmentation_sitk,
                     show_comparison_file=show_comparison_file,
+                    name_comparison_file=name_comparison_file,
                     viewer=viewer,
                     dir_output=dir_output,
                     default_pixel_value=default_pixel_value)
