@@ -123,7 +123,7 @@ def write_variables(variables, directory, filename, filetype=".pckl"):
     flag = f.close()
 
     if not flag:
-        print_info("Variables successfully written to " + filename_out)
+        print_info("Variables written to " + filename_out)
     else:
         print_info("Error: Variables could not be written")
 
@@ -146,7 +146,7 @@ def read_variables(directory, filename, filetype=".pckl"):
     flag = f.close()
 
     if not flag:
-        print_info("Variables successfully read from " + filename_in)
+        print_info("Variables read from " + filename_in)
     else:
         print_info("Error: Variables could not be read")
 
@@ -1375,6 +1375,6 @@ def write_array_to_file(path_to_file, array, format="%.10e", delimiter="\t", acc
     np.savetxt(file_handle, array, fmt=format, delimiter=delimiter)
     file_handle.close()
     if access_mode == "w":
-        print_info("File '%s' successfully written" % (path_to_file))
+        print_info("File '%s' written" % (path_to_file))
     elif access_mode == "a":
-        print_info("File '%s' successfully updated" % (path_to_file))
+        print_info("File '%s' updated" % (path_to_file))
