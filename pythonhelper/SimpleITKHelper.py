@@ -1242,9 +1242,9 @@ def write_executable_file(cmds,
     call = "#!/usr/bin/python\n"
     call += "\n"
     call += "##\n"
-    call += "#  \\file " + "showComparison.py\n"
+    call += "#  \\file " + filename + "\n"
     call += "#  \\brief\t" + \
-        "Execute 'showComparison.py' for a visual comparison of all images\n"
+        "Execute '%s' for a visual comparison of all images\n" % filename
     call += "#\n"
     call += "#  Three different viewers can be selected:\n"
     call += "#  - ITK-SNAP (default): http://www.itksnap.org/\n"
@@ -1314,7 +1314,7 @@ def write_executable_file(cmds,
     text_file.write("%s" % call)
     text_file.close()
 
-    print_info("File " + dir_output + filename + " generated.")
+    ph.print_info("File " + dir_output + filename + " generated.")
 
     # Make python file executable
     os.system("chmod +x " + dir_output + filename)
