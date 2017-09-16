@@ -971,7 +971,7 @@ def _show_2D_array_list_array_by_array(nda2D_list,
 def _get_grid_size(N_slices):
 
     if N_slices > 40:
-        raise RuntimeError("Too many slices to print")
+        raise ValueError("Too many slices to print")
 
     # Define the view grid to arrange the slices
     if N_slices <= 3:
