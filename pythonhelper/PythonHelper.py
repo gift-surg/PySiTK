@@ -65,10 +65,10 @@ MARKERS = [
     "d",        # thin_diamond
     "|",        # vline
     "_",        # hline
-    "None",     # nothing
-    " ",        # nothing
-    "",         # nothing
-    '$...$',    # render the string using mathtext
+    # "None",     # nothing
+    # " ",        # nothing
+    # "",         # nothing
+    # '$...$',    # render the string using mathtext
 ]
 
 LINESTYLES = [
@@ -77,8 +77,8 @@ LINESTYLES = [
     "-.",       # dash-dotted line
     ":",        # dotted line
     "None",     # draw nothing
-    " ",        # draw nothing
-    "",         # draw nothing
+    # " ",        # draw nothing
+    # "",         # draw nothing
 ]
 
 
@@ -197,8 +197,12 @@ def get_performed_script_execution(script_name, args):
     cmd = "python " + script_name + " \\\n"
 
     for arg in sorted(vars(args)):
-        argument = ("%s=" % (arg)).replace("_", "-")
-        cmd += "\t--" + argument + "%s" % (getattr(args, arg)) + " \\\n"
+        argument = ("%s " % (arg)).replace("_", "-")
+        if type(getattr(args, arg)) is list:
+            text = (" ").join([str(s) for s in getattr(args, arg)])
+        else:
+            text = getattr(args, arg)
+        cmd += "\t--" + argument + "%s" % text + " \\\n"
 
     return cmd
 
