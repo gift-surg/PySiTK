@@ -164,8 +164,8 @@ def get_sitk_image_origin_from_sitk_affine_transform(affine_transform_sitk,
 
     R = np.array(affine_transform_sitk.GetMatrix()).reshape(dim, dim)
 
-    return affine_center + affine_translation
-    # return affine_center + affine_translation - R.dot(affine_center)
+    # return affine_center + affine_translation
+    return affine_center + affine_translation - R.dot(affine_center)
 
 
 ##

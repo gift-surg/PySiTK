@@ -461,7 +461,7 @@ def flip(items, ncol):
 #
 # \return     figure
 #
-def show_curves(y, x=None, xlabel="", ylabel="", title="", xlim=None, ylim=None, y_axis_style="plot", labels=None, label_location="best", color=None, markers=None, markevery=10, linestyle=None, label_shadow=False, label_frameon=True, label_fontsize=None, label_boundingboxtoanchor=None, label_ncol=1, linewidth=1, markerfacecolors=None, markersize=5, fontfamily="serif", fontname="Arial", use_tex=False, fontsize=12, backgroundcolor="None", aspect_ratio="auto", save_figure=False, directory=None, filename="figure.pdf", fig_number=None, show_compact=0, subplots_left=0.08, subplots_bottom=0.11, subplots_right=0.99, subplots_top=0.83, subplots_wspace=0, subplots_hspace=0, figuresize=None, block_show=False):
+def show_curves(y, x=None, xlabel="", ylabel="", title="", xlim=None, ylim=None, y_axis_style="plot", labels=None, label_location="best", color=None, markers=None, markevery=1, linestyle="-", label_shadow=False, label_frameon=True, label_fontsize=None, label_boundingboxtoanchor=None, label_ncol=1, linewidth=1, markerfacecolors=None, markersize=5, fontfamily="serif", fontname="Arial", use_tex=False, fontsize=12, backgroundcolor="None", aspect_ratio="auto", save_figure=False, directory=None, filename="figure.pdf", fig_number=None, show_compact=0, subplots_left=0.08, subplots_bottom=0.11, subplots_right=0.99, subplots_top=0.83, subplots_wspace=0, subplots_hspace=0, figuresize=None, block_show=False):
 
     if type(y) is not list:
         y = [y]
@@ -489,6 +489,9 @@ def show_curves(y, x=None, xlabel="", ylabel="", title="", xlim=None, ylim=None,
     if type(labels) is not list:
         labels = [labels]*N_curves
 
+    if type(linestyle) is not list:
+        linestyle = [linestyle]*N_curves
+
     if figuresize is None:
         fig = plt.figure(fig_number)
     else:
@@ -511,10 +514,9 @@ def show_curves(y, x=None, xlabel="", ylabel="", title="", xlim=None, ylim=None,
 
         # Specify line settings
         line.set_linewidth(linewidth[i])
+        line.set_linestyle(linestyle[i])
         if color is not None:
             line.set_color(color[i])
-        if linestyle is not None:
-            line.set_linestyle(linestyle[i])
         if markers is not None:
             line.set_marker(markers[i])
             line.set_markevery(markevery)
@@ -549,11 +551,9 @@ def show_curves(y, x=None, xlabel="", ylabel="", title="", xlim=None, ylim=None,
         plt.show(block=False)
 
     if save_figure:
-        # Create directory in case it does not exist already
-        create_directory(directory)
 
         # Save figure to directory
-        _save_figure(fig, directory, filename)
+        save_fig(fig, directory, filename)
 
     return fig
 
@@ -668,7 +668,7 @@ def show_images(images, titles=None, cmap="Greys_r", use_colorbar=False, fontfam
         create_directory(directory)
 
         # Save figure to directory
-        _save_figure(fig, directory, filename)
+        save_fig(fig, directory, filename)
 
     return fig
 
@@ -805,7 +805,7 @@ def _show_2D_array(nda, title="data", cmap="Greys_r", colorbar=False, directory=
         create_directory(directory)
 
         # Save figure to directory
-        _save_figure(fig, directory, title, save_type)
+        save_fig(fig, directory, title + "." + save_type)
 
     return fig
 
@@ -853,8 +853,8 @@ def _show_3D_array_slice_by_slice(nda3D_zyx, title="data", cmap="Greys_r", color
         create_directory(directory)
 
         # Save figure to directory
-        _save_figure(fig, directory, title+"_slice_0_to_" +
-                     str(N_slices-1), save_type)
+        save_fig(fig, directory, title+"_slice_0_to_" +
+                     str(N_slices-1)+".pdf")
 
     return fig
 
@@ -959,7 +959,7 @@ def _show_2D_array_list_array_by_array(nda2D_list,
         create_directory(directory)
 
         # Save figure to directory
-        _save_figure(fig, directory, filename)
+        save_fig(fig, directory, filename)
 
     return fig
 
@@ -1002,7 +1002,7 @@ def _get_grid_size(N_slices):
 # \param      directory  The directory
 # \param      filename   The filename including filename extension
 #
-def _save_figure(fig, directory, filename):
+def save_fig(fig, directory, filename):
 
     create_directory(directory)
 
