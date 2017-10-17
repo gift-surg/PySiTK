@@ -22,13 +22,17 @@ testjob:
     - venv_dir=$(pwd)
     - source bin/activate
     
+    # copy ITK_me path
+    SITEDIR=$(python -m site --user-site)
+    mkdir -p "$SITEDIR"
+    cp Wrapping/Generators/Python/WrapITK.pth $SITEDIR
+
     # print Python version to CI output
     - which python
     - python --version
     - cd $pysitk_dir
 
     - pip install -r requirements.txt
-    - pip install itk
 
     # tests
     - python -m unittest discover -s "test" -p "*_test.py"

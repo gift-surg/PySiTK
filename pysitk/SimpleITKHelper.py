@@ -19,12 +19,12 @@ import fnmatch
 import re
 
 # Import modules
-import pythonhelper.PythonHelper as ph
+import pysitk.PythonHelper as ph
 
-from pythonhelper.definitions import DIR_TMP
-from pythonhelper.definitions import ITKSNAP_EXE
-from pythonhelper.definitions import FSLVIEW_EXE
-from pythonhelper.definitions import NIFTYVIEW_EXE
+from pysitk.definitions import DIR_TMP
+from pysitk.definitions import ITKSNAP_EXE
+from pysitk.definitions import FSLVIEW_EXE
+from pysitk.definitions import NIFTYVIEW_EXE
 
 # Use ITK-SNAP instead of imageJ to view images
 os.environ['SITK_SHOW_COMMAND'] = ITKSNAP_EXE

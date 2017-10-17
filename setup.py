@@ -17,15 +17,15 @@ from setuptools import setup
 long_description = "This package contains scripts to facilitate IO, " \
     "printing, plotting, ... and the interaction between SimpleITK and ITK"
 
-setup(name='PythonHelper',
+setup(name='PySiTK',
       version='0.1.dev1',
       description='Python helper scripts',
       long_description=long_description,
-      url='https://cmiclab.cs.ucl.ac.uk/mebner/PythonHelper',
+      url='https://cmiclab.cs.ucl.ac.uk/gift-surg/PySiTK',
       author='Michael Ebner',
       author_email='michael.ebner.14@ucl.ac.uk',
       license='MIT',
-      packages=['pythonhelper'],
+      packages=['pysitk'],
       install_requires=[
           "SimpleITK",
           "numpy",

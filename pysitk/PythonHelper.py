@@ -22,10 +22,10 @@ import datetime
 from PIL import Image
 import itertools
 
-from pythonhelper.definitions import DIR_TMP
-from pythonhelper.definitions import ITKSNAP_EXE
-from pythonhelper.definitions import FSLVIEW_EXE
-from pythonhelper.definitions import NIFTYVIEW_EXE
+from pysitk.definitions import DIR_TMP
+from pysitk.definitions import ITKSNAP_EXE
+from pysitk.definitions import FSLVIEW_EXE
+from pysitk.definitions import NIFTYVIEW_EXE
 
 ##
 COLORS = [

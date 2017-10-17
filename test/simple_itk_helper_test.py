@@ -14,9 +14,9 @@ import os
 import sys
 
 # Import modules
-import pythonhelper.SimpleITKHelper as sitkh
+import pysitk.SimpleITKHelper as sitkh
 
-from pythonhelper.definitions import DIR_TEST
+from pysitk.definitions import DIR_TEST
 
 
 def get_registration_transform(fixed_sitk,
