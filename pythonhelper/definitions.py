@@ -1,9 +1,11 @@
 import os
 import sys
+import tempfile
 
 DIR_ROOT = os.path.dirname(os.path.abspath(__file__))
 DIR_TEST = os.path.join(DIR_ROOT, "..", "data")
-DIR_TMP = os.environ['TMPDIR']
+DIR_TMP = tempfile.gettempdir()
+# DIR_TMP = os.environ['TMPDIR']
 # DIR_TMP = "/tmp/"
 
 # Linked executables
