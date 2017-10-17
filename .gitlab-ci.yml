@@ -28,6 +28,7 @@ testjob:
     - cd $pysitk_dir
 
     - pip install -r requirements.txt
+    - pip install itk
 
     # tests
     - python -m unittest discover -s "test" -p "*_test.py"
