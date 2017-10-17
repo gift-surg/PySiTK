@@ -172,7 +172,7 @@ def get_registration_transform(fixed_sitk,
 class TestSimpleITKHelper(unittest.TestCase):
 
     def setUp(self):
-        self.accuracy = 6
+        self.accuracy = 5
         self.dir_test_data = os.path.join(DIR_TEST, "BrainWeb")
 
         self.filename = "t1_icbm_normal_5mm_pn0_rf0"
