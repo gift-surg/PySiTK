@@ -14,7 +14,7 @@ import os
 import sys
 
 # Import modules
-import pysitk.SimpleITKHelper as sitkh
+import pysitk.simple_itk_helper as sitkh
 
 from pysitk.definitions import DIR_TEST
 

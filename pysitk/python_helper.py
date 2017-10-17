@@ -1,5 +1,5 @@
 ##
-# \file PythonHelper.py
+# \file python_helper.py
 # \brief      Scripts to facilitate IO, plotting, printing etc
 #
 # \author     Michael Ebner (michael.ebner.14@ucl.ac.uk)

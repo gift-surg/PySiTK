@@ -1,5 +1,5 @@
 ##
-# \file SimpleITKHelper.py
+# \file simple_itk_helper.py
 # \brief      Utility functions associated to SimpleITK and ITK
 #
 # \author     Michael Ebner (michael.ebner.14@ucl.ac.uk)
@@ -19,7 +19,7 @@ import fnmatch
 import re
 
 # Import modules
-import pysitk.PythonHelper as ph
+import pysitk.python_helper as ph
 
 from pysitk.definitions import DIR_TMP
 from pysitk.definitions import ITKSNAP_EXE
