@@ -271,7 +271,7 @@ class SimpleItkHelperTest(unittest.TestCase):
         N_points = indices.shape[1]
 
         # Get sitk affine transform from image first (the way it is used in
-        # Slice.py)
+        # slice.py)
         affine_transform_sitk = \
             sitkh.get_sitk_affine_transform_from_sitk_image(self.image_sitk)
 
@@ -294,8 +294,7 @@ class SimpleItkHelperTest(unittest.TestCase):
             np.where(sitk.GetArrayFromImage(self.image_sitk)[::-1] > 0))
         N_points = indices.shape[1]
 
-        # Get sitk affine transform from image first (the way it is used in
-        # Slice.py)
+        # Get sitk affine transform from image first
         affine_transform_sitk = \
             sitkh.get_sitk_affine_transform_from_sitk_image(self.image_sitk)
 
