@@ -15,7 +15,7 @@ testjob:
     - export pysitk_dir=$(pwd)
 
     # create a virtual env to dev-test
-    - pyversion=3
+    - pyversion=2
     - venv="pysitk-test-py${pyversion}"
     - mypython=$(which python${pyversion})
     - virtualenv -p $mypython $venv
