@@ -15,7 +15,7 @@ testjob:
     - export pysitk_dir=$(pwd)
 
     # create a virtual env to dev-test
-    - pyversion=2
+    - pyversion=3
     - venv="pysitk-test-py${pyversion}"
     - mypython=$(which python${pyversion})
     - virtualenv -p $mypython $venv
@@ -37,7 +37,7 @@ testjob:
     - pip install -r requirements.txt
 
     # tests
-    - python -m unittest discover -s "test" -p "*_test.py"
+    - python -m unittest discover -s "tests" -p "*_test.py"
     
 
   tags:
