@@ -1,4 +1,4 @@
-# \file TestSimpleITKHelper.py
+# \file simple_itk_helper_test.py
 #  \brief  Class containing unit tests for module SimpleITKHelper
 #
 #  \author Michael Ebner (michael.ebner.14@ucl.ac.uk)
@@ -169,7 +169,7 @@ def get_registration_transform(fixed_sitk,
 # Concept of unit testing for python used in here is based on
 #  http://pythontesting.net/framework/unittest/unittest-introduction/
 #  Retrieved: Aug 6, 2015
-class TestSimpleITKHelper(unittest.TestCase):
+class simple_itk_helper_test(unittest.TestCase):
 
     def setUp(self):
         self.accuracy = 5
