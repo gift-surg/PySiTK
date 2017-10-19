@@ -38,7 +38,5 @@ testjob:
 
     # tests
     - python -m unittest discover -s "tests" -p "*_test.py"
-    
-
   tags:
-    - gift-adelie    
+    - gift-adelie
