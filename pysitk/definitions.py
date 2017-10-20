@@ -4,7 +4,8 @@ import tempfile
 
 DIR_ROOT = os.path.dirname(os.path.abspath(__file__))
 DIR_TEST = os.path.join(DIR_ROOT, "..", "data")
-DIR_TMP = tempfile.gettempdir()
+# DIR_TMP = tempfile.gettempdir()
+DIR_TMP = tempfile.mkdtemp()
 
 # Linked executables
 ITKSNAP_EXE = "itksnap"

@@ -1154,8 +1154,8 @@ def execute_command(cmd,
 def create_directory(directory, delete_files=False, verbose=False):
 
     # Add slash in case not existing
-    if directory[-1] not in ["/"]:
-        directory += "/"
+    # if directory[-1] not in ["/"]:
+    #     directory += "/"
 
     # Create directory in case it does not exist already
     if not os.path.isdir(directory):
