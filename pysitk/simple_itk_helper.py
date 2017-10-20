@@ -1310,14 +1310,14 @@ def write_executable_file(cmds,
     call += "os.system(cmd)\n"
 
     # Write function call to python file
-    text_file = open(dir_output + filename, "w")
+    text_file = open(os.path.join(dir_output, filename), "w")
     text_file.write("%s" % call)
     text_file.close()
 
-    ph.print_info("File " + dir_output + filename + " generated.")
+    ph.print_info("File " + os.path.join(dir_output, filename) + " generated.")
 
     # Make python file executable
-    os.system("chmod +x " + dir_output + filename)
+    os.system("chmod +x " + os.path.join(dir_output, filename))
 
 
 ##
@@ -1399,13 +1399,14 @@ def show_sitk_image(image_sitk,
     # Write images to tmp-folder
     filenames = [None] * len(image_sitk)
     for i in range(0, len(image_sitk)):
-        filenames[i] = dir_output + label[i] + ".nii.gz"
+        filenames[i] = os.path.join(dir_output, label[i] + ".nii.gz")
         sitk.WriteImage(image_sitk[i], filenames[i])
 
     if segmentation is None:
         filename_segmentation = None
     else:
-        filename_segmentation = dir_output + label_segmentation + ".nii.gz"
+        filename_segmentation = os.path.join(
+            dir_output, label_segmentation + ".nii.gz")
 
         # In case images are not in the same physical space, resample them
         try:
@@ -1517,47 +1518,58 @@ def show_itk_image(image_itk,
                    segmentation=None,
                    overlay=None,
                    label="test",
-                   dir_output=DIR_TMP):
-
-    # cmd = "fslview " + dir_output + label + ".nii.gz & "
+                   dir_output=DIR_TMP,
+                   ENDL=" "):
 
     if overlay is not None and segmentation is None:
-        write_itk_image(image_itk, dir_output + label + ".nii.gz")
-        write_itk_image(overlay, dir_output + label + "_overlay.nii.gz")
+        write_itk_image(image_itk,
+                        os.path.join(dir_output, label + ".nii.gz"))
+        write_itk_image(overlay,
+                        os.path.join(dir_output, label + "_overlay.nii.gz"))
 
         cmd = ITKSNAP_EXE + " " \
-            + "-g " + dir_output + label + ".nii.gz " \
-            + "-o " + dir_output + label + "_overlay.nii.gz " \
-            "& "
+            + "-g " + os.path.join(dir_output, label + ".nii.gz") + ENDL \
+            + "-o " + os.path.join(dir_output,
+                                   label + "_overlay.nii.gz") + ENDL \
+            + "& "
 
     elif overlay is None and segmentation is not None:
-        write_itk_image(image_itk, dir_output + label + ".nii.gz")
-        write_itk_image(segmentation, dir_output +
-                        label + "_segmentation.nii.gz")
+        write_itk_image(image_itk,
+                        os.path.join(dir_output, label + ".nii.gz"))
+        write_itk_image(segmentation,
+                        os.path.join(
+                            dir_output, label + "_segmentation.nii.gz"))
 
         cmd = ITKSNAP_EXE + " " \
-            + "-g " + dir_output + label + ".nii.gz " \
-            + "-s " + dir_output + label + "_segmentation.nii.gz " \
+            + "-g " + os.path.join(dir_output, label + ".nii.gz") + ENDL \
+            + "-s " + os.path.join(
+                dir_output, label + "_segmentation.nii.gz") + ENDL \
             + "& "
 
     elif overlay is not None and segmentation is not None:
-        write_itk_image(image_itk, dir_output + label + ".nii.gz")
-        write_itk_image(segmentation, dir_output +
-                        label + "_segmentation.nii.gz")
-        write_itk_image(overlay, dir_output + label + "_overlay.nii.gz")
+        write_itk_image(image_itk,
+                        os.path.join(dir_output, label + ".nii.gz"))
+        write_itk_image(segmentation,
+                        os.path.join(dir_output,
+                                     label + "_segmentation.nii.gz"))
+        write_itk_image(overlay,
+                        os.path.join(dir_output, label + "_overlay.nii.gz"))
 
         cmd = ITKSNAP_EXE + " " \
-            + "-g " + dir_output + label + ".nii.gz " \
-            + "-s " + dir_output + label + "_segmentation.nii.gz " \
-            + "-o " + dir_output + label + "_overlay.nii.gz " \
+            + "-g " + os.path.join(dir_output,
+                                   label + ".nii.gz") + ENDL \
+            + "-s " + os.path.join(dir_output,
+                                   label + "_segmentation.nii.gz") + ENDL \
+            + "-o " + os.path.join(dir_output,
+                                   label + "_overlay.nii.gz") + ENDL \
             + "& "
 
     else:
-        write_itk_image(image_itk, dir_output + label + ".nii.gz")
+        write_itk_image(image_itk, os.path.join(dir_output, label + ".nii.gz"))
 
         cmd = ITKSNAP_EXE + " " \
-            + "-g " + dir_output + label + ".nii.gz " \
-            "& "
+            + "-g " + os.path.join(dir_output, label + ".nii.gz") + ENDL \
+            + "& "
 
     ph.execute_command(cmd)
 
