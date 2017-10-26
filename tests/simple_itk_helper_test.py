@@ -166,9 +166,6 @@ def get_registration_transform(fixed_sitk,
     return sitk.AffineTransform(final_transform_3D_sitk)
 
 
-# Concept of unit testing for python used in here is based on
-#  http://pythontesting.net/framework/unittest/unittest-introduction/
-#  Retrieved: Aug 6, 2015
 class SimpleItkHelperTest(unittest.TestCase):
 
     def setUp(self):
