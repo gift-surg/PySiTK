@@ -15,16 +15,16 @@
 from setuptools import setup
 
 long_description = "This package contains scripts to facilitate IO, " \
-    "printing, plotting, ... and the interaction between SimpleITK and ITK"
+    "printing, plotting, ... and the interaction between SimpleITK and WrapITK"
 
 setup(name='PySiTK',
       version='0.1.dev1',
-      description='Python helper scripts',
+      description='Python SimpleITK/WrapITK helper scripts',
       long_description=long_description,
       url='https://cmiclab.cs.ucl.ac.uk/gift-surg/PySiTK',
       author='Michael Ebner',
       author_email='michael.ebner.14@ucl.ac.uk',
-      license='MIT',
+      license='BSD-3-Clause',
       packages=['pysitk'],
       install_requires=[
           "pip>=9.0.1",
@@ -36,6 +36,7 @@ setup(name='PySiTK',
           "cmake>=0.8.0",
           "ninja>=1.7.2",
           "SimpleITK>=1.0.1",
+          "nose>=1.3.7",
       ],
       zip_safe=False,
       keywords='development ITK SimpleITK',
@@ -46,7 +47,7 @@ setup(name='PySiTK',
           'Intended Audience :: Healthcare Industry',
           'Intended Audience :: Science/Research',
 
-          'License :: OSI Approved :: MIT License',
+          'License :: OSI Approved :: BSD License',
 
           'Topic :: Software Development :: Build Tools',
           'Topic :: Scientific/Engineering :: Medical Science Apps.',

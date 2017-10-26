@@ -7,3 +7,4 @@ Pillow>=4.2.1
 cmake>=0.8.0
 ninja>=1.7.2
 SimpleITK>=1.0.1
+nose>=1.3.7
