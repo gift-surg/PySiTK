@@ -13,7 +13,7 @@ Installation of the external dependencies:
 * [ITK_NiftyMIC][itkniftymic]
 
 Clone the PySiTK repository by
-* `git clone git@cmiclab.cs.ucl.ac.uk:GIFT-Surg/PySiTK.git` 
+* `git clone git@github.com:gift-surg/PySiTK.git` 
 
 Install all Python-dependencies by 
 * `pip install -r requirements.txt`
@@ -43,4 +43,4 @@ This work is partially funded by the UCL [Engineering and Physical Sciences Rese
 [ucl]: http://www.ucl.ac.uk
 [simpleitk]: http://www.simpleitk.org/
 [wrapitk]: https://itk.org/Wiki/ITK/WrapITK_Status
-[itkniftymic]: https://cmiclab.cs.ucl.ac.uk/GIFT-Surg/ITK_NiftyMIC/wikis/home
+[itkniftymic]: https://github.com/gift-surg/ITK_NiftyMIC/wikis/home
