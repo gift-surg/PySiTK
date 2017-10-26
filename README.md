@@ -1,22 +1,39 @@
-# PythonHelper 
+# PySiTK 
 
-This software package contains a collection of helper functions to facilitate IO, printing, plotting, ... and the interaction with [SimpleITK](http://www.simpleitk.org/) and [ITK](https://itk.org/).
+PySiTK is a Python-based open-source toolkit that provides a collection of helper functions to facilitate IO, printing, plotting, ... and the interaction between [SimpleITK][simpleitk] and [ITK_NiftyMIC][itkniftymic].
+Please not that currently **only Python 2** is supported.
 
-It was developed in support of various research-focused toolkits within the [GIFT-Surg](http://www.gift-surg.ac.uk/) project.
+The algorithm and software were developed by [Michael Ebner][mebner] at the [Translational Imaging Group][tig] in the [Centre for Medical Image Computing][cmic] at [University College London (UCL)][ucl].
 
 If you have any questions or comments (or find bugs), please drop me an email to `michael.ebner.14@ucl.ac.uk`.
 
 ## Installation
 
-Required dependencies can be installed using `pip` by running
+Installation of the external dependencies:
+* [ITK_NiftyMIC][itkniftymic]
+
+Clone the PySiTK repository by
+* `git clone git@cmiclab.cs.ucl.ac.uk:GIFT-Surg/SimpleReg.git` 
+
+Install all Python-dependencies by 
 * `pip install -r requirements.txt`
+
+Install PySiTK by running
 * `pip install -e .`
 
-In addition, you will need to install `itk` for Python. In case you want to make use of the [Volumetric MRI Reconstruction from Motion Corrupted 2D Slices](https://cmiclab.cs.ucl.ac.uk/mebner/VolumetricReconstruction) tool or any of its dependencies, please install the ITK version as described there. Otherwise, simply run
-* `pip install itk`
 
-In order to run the provided unit tests, please execute
-* `python test/runTests.py`
+## Licensing and Copyright
+Copyright (c) 2017, [University College London][ucl].
+This framework is made available as free open-source software under the [BSD-3-Clause License][bsd]. Other licenses may apply for dependencies.
 
-## License
-This framework is licensed under the [MIT license ![MIT](https://raw.githubusercontent.com/legacy-icons/license-icons/master/dist/32x32/mit.png)](http://opensource.org/licenses/MIT)
+[citation]: https://www.sciencedirect.com/science/article/pii/S1053811917308042
+[mebner]: http://cmictig.cs.ucl.ac.uk/people/phd-students/michael-ebner
+[tig]: http://cmictig.cs.ucl.ac.uk
+[bsd]: https://opensource.org/licenses/BSD-3-Clause
+[giftsurg]: http://www.gift-surg.ac.uk
+[cmic]: http://cmic.cs.ucl.ac.uk
+[guarantors]: https://guarantorsofbrain.org/
+[ucl]: http://www.ucl.ac.uk
+[simpleitk]: http://www.simpleitk.org/
+[wrapitk]: https://itk.org/Wiki/ITK/WrapITK_Status
+[itkniftymic]: https://cmiclab.cs.ucl.ac.uk/GIFT-Surg/ITK_NiftyMIC/wikis/home
