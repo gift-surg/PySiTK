@@ -13,7 +13,7 @@ Installation of the external dependencies:
 * [ITK_NiftyMIC][itkniftymic]
 
 Clone the PySiTK repository by
-* `git clone git@cmiclab.cs.ucl.ac.uk:GIFT-Surg/SimpleReg.git` 
+* `git clone git@cmiclab.cs.ucl.ac.uk:GIFT-Surg/PySiTK.git` 
 
 Install all Python-dependencies by 
 * `pip install -r requirements.txt`
