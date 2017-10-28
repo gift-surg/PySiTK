@@ -1141,7 +1141,7 @@ def execute_command(cmd,
         print(cmd)
         print("---------------------------")
         print("")
-    os.system(cmd)
+    return os.system(cmd)
 
 
 ##
