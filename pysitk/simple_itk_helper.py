@@ -655,10 +655,19 @@ def write_itk_image(image_itk, filename):
 def write_nifti_image_sitk(image_sitk, path_to_file):
     sitk.WriteImage(image_sitk, path_to_file)
 
-    # HACKS for now (which might cause some issues)
+    # HACK:
+    # (only works for 3D volumes. If a 3D slice is written, it sets dim0 to 2!)
     # ph.execute_command("fslorient -forceradiological %s" % path_to_file)
     # ph.execute_command("fslorient -forceneurological %s" % path_to_file)
     # ph.execute_command("fslorient -copyqform2sform %s" % path_to_file)
+
+    # This seems to work also if it as a 3D slice: s-form gets correctly
+    # updated as well.
+    # ph.execute_command("fslmodhd %s dim0 3" % path_to_file)
+
+    # Does not update the s-form
+    # nii = nib.load(path_to_file)
+    # nib.save(nii, path_to_file)
 
 
 ##
