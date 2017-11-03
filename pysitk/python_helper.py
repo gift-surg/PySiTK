@@ -854,7 +854,7 @@ def _show_3D_array_slice_by_slice(nda3D_zyx, title="data", cmap="Greys_r", color
 
         # Save figure to directory
         save_fig(fig, directory, title+"_slice_0_to_" +
-                     str(N_slices-1)+".pdf")
+                 str(N_slices-1)+".pdf")
 
     return fig
 
@@ -1117,6 +1117,14 @@ def print_line_separator(add_newline=True, symbol="*", length=99):
     print(symbol*length)
 
 
+def print_execution(cmd):
+    print("")
+    print("---- Executed command: ----")
+    print(cmd)
+    print("---------------------------")
+    print("")
+
+
 ##
 # Execute and show command in command window.
 # \date       2016-12-06 17:37:57+0000
@@ -1136,11 +1144,8 @@ def execute_command(cmd,
         return
 
     if verbose:
-        print("")
-        print("---- Executed command: ----")
-        print(cmd)
-        print("---------------------------")
-        print("")
+        print_execution(cmd)
+
     return os.system(cmd)
 
 

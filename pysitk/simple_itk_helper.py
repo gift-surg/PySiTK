@@ -643,6 +643,25 @@ def write_itk_image(image_itk, filename):
 
 
 ##
+# Writes a SimpleITK image object to NiftI file.
+# \date       2017-11-03 16:03:10+0000
+#
+# \param      image_sitk    Image as sitk.Image object
+# \param      path_to_file  path to filename
+#
+# \todo sitk.WriteImage only writes the q-form. Will need to be taken care
+# that also s-form is written accordingly
+#
+def write_nifti_image_sitk(image_sitk, path_to_file):
+    sitk.WriteImage(image_sitk, path_to_file)
+
+    # HACKS for now (which might cause some issues)
+    # ph.execute_command("fslorient -forceradiological %s" % path_to_file)
+    # ph.execute_command("fslorient -forceneurological %s" % path_to_file)
+    # ph.execute_command("fslorient -copyqform2sform %s" % path_to_file)
+
+
+##
 # Print the ITK direction matrix
 # \date       2016-09-20 15:52:28+0100
 #
@@ -1400,7 +1419,7 @@ def show_sitk_image(image_sitk,
     filenames = [None] * len(image_sitk)
     for i in range(0, len(image_sitk)):
         filenames[i] = os.path.join(dir_output, label[i] + ".nii.gz")
-        sitk.WriteImage(image_sitk[i], filenames[i])
+        write_nifti_image_sitk(image_sitk[i], filenames[i])
 
     if segmentation is None:
         filename_segmentation = None
@@ -1421,7 +1440,7 @@ def show_sitk_image(image_sitk,
                 sitk.sitkNearestNeighbor,
                 0)
 
-        sitk.WriteImage(segmentation, filename_segmentation)
+        write_nifti_image_sitk(segmentation, filename_segmentation)
 
     # Get command line to call viewer
     cmd = eval("ph.get_function_call_" + viewer +
