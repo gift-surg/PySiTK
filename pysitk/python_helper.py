@@ -1100,6 +1100,13 @@ def print_info(text, newline=True, prefix="--- "):
         sys.stdout.flush()
 
 
+def print_warning(text, prefix="WARNING: ", symbol="X"):
+    print_line_separator(symbol=symbol, add_newline=True)
+    print_info(prefix + text)
+    print_line_separator(symbol=symbol, add_newline=False)
+    print("")
+
+
 def print_title(text, symbol="*", add_newline=False):
     print_line_separator(symbol=symbol)
     print_subtitle(text, symbol=symbol, add_newline=add_newline)

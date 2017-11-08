@@ -643,31 +643,35 @@ def write_itk_image(image_itk, filename):
 
 
 ##
-# Writes a SimpleITK image object to NiftI file.
+# Writes a SimpleITK image object to NiftI file including both q- and s-forms.
+#
+# By default, ITK only writes the q-form and s-form is set to zero. The problem
+# is that, e.g., ITK seems to prioritize the q-form whereas FSL prioritizes the
+# s-form.
+# \see        https://github.com/ANTsX/ANTs/wiki/How-does-ANTs-handle-qform-and-sform-in-NIFTI-1-images%3F
 # \date       2017-11-03 16:03:10+0000
 #
 # \param      image_sitk    Image as sitk.Image object
 # \param      path_to_file  path to filename
 #
-# \todo sitk.WriteImage only writes the q-form. Will need to be taken care
-# that also s-form is written accordingly
-#
 def write_nifti_image_sitk(image_sitk, path_to_file):
+
+    ph.create_directory(os.path.dirname(path_to_file))
     sitk.WriteImage(image_sitk, path_to_file)
 
-    # HACK:
-    # (only works for 3D volumes. If a 3D slice is written, it sets dim0 to 2!)
-    # ph.execute_command("fslorient -forceradiological %s" % path_to_file)
-    # ph.execute_command("fslorient -forceneurological %s" % path_to_file)
-    # ph.execute_command("fslorient -copyqform2sform %s" % path_to_file)
+    # Use fslorient to copy q-form to s-form. However, in case of a 3D slice,
+    # it would set dim0 = 2 incorrectly. Using fslmodhd for such a case seems
+    # to do the trick as it updates the s-form as well.
+    if image_sitk.GetDimension() == 3 and image_sitk.GetSize()[-1] == 1:
+        flag = ph.execute_command(
+            "fslmodhd %s dim0 3" % path_to_file, verbose=False)
+    else:
+        flag = ph.execute_command(
+            "fslorient -copyqform2sform %s" % path_to_file, verbose=False)
 
-    # This seems to work also if it as a 3D slice: s-form gets correctly
-    # updated as well.
-    # ph.execute_command("fslmodhd %s dim0 3" % path_to_file)
-
-    # Does not update the s-form
-    # nii = nib.load(path_to_file)
-    # nib.save(nii, path_to_file)
+    if flag != 0:
+        ph.print_warning(
+            "Only q-form is set as fslorient was not successful!")
 
 
 ##
