@@ -1300,7 +1300,7 @@ def write_executable_file(cmds,
     call += "FSLVIEW_EXE = " + '"' + FSLVIEW_EXE + '"'
     call += "\n"
     call += "# NIFTYVIEW_EXE = " + \
-        '"/Applications/niftk-17.3.2/NiftyView.app/Contents/MacOS/NiftyView"'
+        '"/Applications/niftk-17.9.6/NiftyView.app/Contents/MacOS/NiftyView"'
     call += "\n"
     call += "NIFTYVIEW_EXE = " + '"' + NIFTYVIEW_EXE + '"'
     call += "\n"

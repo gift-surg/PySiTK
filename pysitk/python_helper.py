@@ -360,7 +360,7 @@ def get_function_call_itksnap(filenames, filename_segmentation=None):
 #
 # \return     string to be executed.
 #
-def get_function_call_fslview(filenames, filename_segmentation=None):
+def get_function_call_fsleyes(filenames, filename_segmentation=None):
 
     cmd = FSLVIEW_EXE + " \\\n"
     for i in range(0, len(filenames)):
