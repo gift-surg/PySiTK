@@ -13,3 +13,6 @@ FSLVIEW_EXE = "fsleyes"  # Viewer in FSL 5.0.10
 # FSLVIEW_EXE = "fslview" # deprecated in FSL 5.0.10 -> fslview_deprecated
 # FSLVIEW_EXE = "fslview_deprecated"
 NIFTYVIEW_EXE = "NiftyView"
+
+# Set default viewer
+VIEWER = ITKSNAP_EXE

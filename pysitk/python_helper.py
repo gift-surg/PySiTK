@@ -23,9 +23,8 @@ from PIL import Image
 import itertools
 
 from pysitk.definitions import DIR_TMP
-from pysitk.definitions import ITKSNAP_EXE
-from pysitk.definitions import FSLVIEW_EXE
-from pysitk.definitions import NIFTYVIEW_EXE
+from pysitk.definitions import ITKSNAP_EXE, FSLVIEW_EXE, NIFTYVIEW_EXE
+from pysitk.definitions import VIEWER
 
 ##
 COLORS = [
@@ -279,8 +278,8 @@ def itksnap(path_to_filename):
 #
 # \param      path_to_filename  The path to filename as string
 #
-def fslview(path_to_filename):
-    show_nifti(path_to_filename, viewer="fslview")
+def fsleyes(path_to_filename):
+    show_nifti(path_to_filename, viewer="fsleyes")
 
 
 ##
@@ -298,10 +297,10 @@ def niftyview(path_to_filename):
 # \date       2017-07-06 12:34:12+0100
 #
 # \param      path_to_filename  The path to filename as string;
-# \param      viewer            The viewer; either "fslview", "itksnap" or
+# \param      viewer            The viewer; either "fsleyes", "itksnap" or
 #                               "niftyview"
 #
-def show_nifti(path_to_filename, viewer="itksnap"):
+def show_nifti(path_to_filename, viewer=VIEWER):
     show_niftis([path_to_filename], viewer=viewer)
 
 
@@ -310,10 +309,10 @@ def show_nifti(path_to_filename, viewer="itksnap"):
 # \date       2017-07-06 12:36:05+0100
 #
 # \param      paths_to_filenames  List of strings containing paths to filenames
-# \param      viewer            The viewer; either "fslview", "itksnap" or
+# \param      viewer            The viewer; either "fsleyes", "itksnap" or
 #                               "niftyview"
 #
-def show_niftis(paths_to_filenames, viewer="itksnap"):
+def show_niftis(paths_to_filenames, viewer=VIEWER):
     cmd = globals()["get_function_call_" + viewer](paths_to_filenames)
     execute_command(cmd)
 
@@ -385,7 +384,7 @@ def get_function_call_fslview(filenames, filename_segmentation=None):
 #
 # \return     string to be executed.
 #
-def get_function_call_niftyview(filenames, filename_segmentation=None):
+def get_function_call_NiftyView(filenames, filename_segmentation=None):
 
     cmd = NIFTYVIEW_EXE + " \\\n"
     for i in range(0, len(filenames)):

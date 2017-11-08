@@ -22,14 +22,11 @@ import re
 import pysitk.python_helper as ph
 
 from pysitk.definitions import DIR_TMP
-from pysitk.definitions import ITKSNAP_EXE
-from pysitk.definitions import FSLVIEW_EXE
-from pysitk.definitions import NIFTYVIEW_EXE
+from pysitk.definitions import ITKSNAP_EXE, FSLVIEW_EXE, NIFTYVIEW_EXE
+from pysitk.definitions import VIEWER
 
 # Use ITK-SNAP instead of imageJ to view images
 os.environ['SITK_SHOW_COMMAND'] = ITKSNAP_EXE
-
-# np.set_printoptions(precision=3)
 
 
 ##
@@ -1363,7 +1360,7 @@ def write_executable_file(cmds,
 # \param      show_comparison_file  choose whether comparison file shall be
 #                                   produced to reproduce visualization at a
 #                                   later stage
-# \param      viewer                Can be "itksnap", "fslview", "niftyview"
+# \param      viewer                Can be "itksnap", "fsleyes", "NiftyView"
 # \param      verbose               Show line for execution
 # \param      interpolator          Interpolator used for resampling
 # \param      dir_output            Output directory for writing files in order
@@ -1377,7 +1374,7 @@ def show_sitk_image(image_sitk,
                     segmentation=None,
                     show_comparison_file=False,
                     name_comparison_file="showComparison.py",
-                    viewer="itksnap",
+                    viewer=VIEWER,
                     verbose=True,
                     interpolator="Linear",
                     dir_output=DIR_TMP,
@@ -1385,9 +1382,9 @@ def show_sitk_image(image_sitk,
 
     dir_output = ph.create_directory(dir_output)
 
-    if viewer not in ["itksnap", "fslview", "niftyview"]:
+    if viewer not in ["itksnap", "fsleyes", "NiftyView"]:
         raise ValueError(
-            "Viewer not known. Select between 'itksnap', 'fslview' and 'niftyview'")
+            "Viewer not known. Select between 'itksnap', 'fsleyes' and 'NiftyView'")
 
     # Convert to list objects
     if type(image_sitk) is not list:
@@ -1470,7 +1467,7 @@ def show_sitk_image(image_sitk,
         cmds[ctr] = ph.get_function_call_itksnap(
             filenames, filename_segmentation)
         ctr = ctr+1
-        cmds[ctr] = ph.get_function_call_fslview(
+        cmds[ctr] = ph.get_function_call_fsleyes(
             filenames, filename_segmentation)
         ctr = ctr+1
         cmds[ctr] = ph.get_function_call_niftyview(
@@ -1492,7 +1489,7 @@ def show_sitk_image(image_sitk,
 # \param      show_comparison_file  choose whether comparison file shall be
 #                                   produced to reproduce visualization at a
 #                                   later stage
-# \param      viewer                Can be "itksnap", "fslview", "niftyview"
+# \param      viewer                Can be "itksnap", "fsleyes", "NiftyView"
 # \param      dir_output            Output directory for writing files in order
 #                                   to open them
 # \param      default_pixel_value   default pixel value for interpolation,
@@ -1504,7 +1501,7 @@ def show_stacks(stacks,
                 segmentation=None,
                 show_comparison_file=False,
                 name_comparison_file="showComparison.py",
-                viewer="itksnap",
+                viewer=VIEWER,
                 dir_output=DIR_TMP,
                 default_pixel_value=0):
 
