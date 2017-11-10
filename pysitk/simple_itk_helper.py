@@ -22,14 +22,11 @@ import re
 import pysitk.python_helper as ph
 
 from pysitk.definitions import DIR_TMP
-from pysitk.definitions import ITKSNAP_EXE
-from pysitk.definitions import FSLVIEW_EXE
-from pysitk.definitions import NIFTYVIEW_EXE
+from pysitk.definitions import ITKSNAP_EXE, FSLVIEW_EXE, NIFTYVIEW_EXE
+from pysitk.definitions import VIEWER
 
 # Use ITK-SNAP instead of imageJ to view images
 os.environ['SITK_SHOW_COMMAND'] = ITKSNAP_EXE
-
-# np.set_printoptions(precision=3)
 
 
 ##
@@ -643,31 +640,37 @@ def write_itk_image(image_itk, filename):
 
 
 ##
-# Writes a SimpleITK image object to NiftI file.
+# Writes a SimpleITK image object to NiftI file including both q- and s-forms.
+#
+# By default, ITK only writes the q-form and s-form is set to zero. The problem
+# is that, e.g., ITK seems to prioritize the q-form whereas FSL prioritizes the
+# s-form.
+# \see        https://github.com/ANTsX/ANTs/wiki/How-does-ANTs-handle-qform-and-sform-in-NIFTI-1-images%3F
 # \date       2017-11-03 16:03:10+0000
 #
 # \param      image_sitk    Image as sitk.Image object
 # \param      path_to_file  path to filename
 #
-# \todo sitk.WriteImage only writes the q-form. Will need to be taken care
-# that also s-form is written accordingly
-#
-def write_nifti_image_sitk(image_sitk, path_to_file):
+def write_nifti_image_sitk(image_sitk, path_to_file, verbose=False):
+
+    ph.create_directory(os.path.dirname(path_to_file))
     sitk.WriteImage(image_sitk, path_to_file)
+    if verbose:
+        ph.print_info("Image written to %s." % path_to_file)
 
-    # HACK:
-    # (only works for 3D volumes. If a 3D slice is written, it sets dim0 to 2!)
-    # ph.execute_command("fslorient -forceradiological %s" % path_to_file)
-    # ph.execute_command("fslorient -forceneurological %s" % path_to_file)
-    # ph.execute_command("fslorient -copyqform2sform %s" % path_to_file)
+    # Use fslorient to copy q-form to s-form. However, in case of a 3D slice,
+    # it would set dim0 = 2 incorrectly. Using fslmodhd for such a case seems
+    # to do the trick as it updates the s-form as well.
+    if image_sitk.GetDimension() == 3 and image_sitk.GetSize()[-1] == 1:
+        flag = ph.execute_command(
+            "fslmodhd %s dim0 3" % path_to_file, verbose=verbose)
+    else:
+        flag = ph.execute_command(
+            "fslorient -copyqform2sform %s" % path_to_file, verbose=verbose)
 
-    # This seems to work also if it as a 3D slice: s-form gets correctly
-    # updated as well.
-    # ph.execute_command("fslmodhd %s dim0 3" % path_to_file)
-
-    # Does not update the s-form
-    # nii = nib.load(path_to_file)
-    # nib.save(nii, path_to_file)
+    if flag != 0:
+        ph.print_warning(
+            "Only q-form is set as fslorient was not successful!")
 
 
 ##
@@ -1299,7 +1302,7 @@ def write_executable_file(cmds,
     call += "FSLVIEW_EXE = " + '"' + FSLVIEW_EXE + '"'
     call += "\n"
     call += "# NIFTYVIEW_EXE = " + \
-        '"/Applications/niftk-17.3.2/NiftyView.app/Contents/MacOS/NiftyView"'
+        '"/Applications/niftk-17.9.6/NiftyView.app/Contents/MacOS/NiftyView"'
     call += "\n"
     call += "NIFTYVIEW_EXE = " + '"' + NIFTYVIEW_EXE + '"'
     call += "\n"
@@ -1359,7 +1362,7 @@ def write_executable_file(cmds,
 # \param      show_comparison_file  choose whether comparison file shall be
 #                                   produced to reproduce visualization at a
 #                                   later stage
-# \param      viewer                Can be "itksnap", "fslview", "niftyview"
+# \param      viewer                Can be "itksnap", "fsleyes", "NiftyView"
 # \param      verbose               Show line for execution
 # \param      interpolator          Interpolator used for resampling
 # \param      dir_output            Output directory for writing files in order
@@ -1373,7 +1376,7 @@ def show_sitk_image(image_sitk,
                     segmentation=None,
                     show_comparison_file=False,
                     name_comparison_file="showComparison.py",
-                    viewer="itksnap",
+                    viewer=VIEWER,
                     verbose=True,
                     interpolator="Linear",
                     dir_output=DIR_TMP,
@@ -1381,9 +1384,9 @@ def show_sitk_image(image_sitk,
 
     dir_output = ph.create_directory(dir_output)
 
-    if viewer not in ["itksnap", "fslview", "niftyview"]:
+    if viewer not in ["itksnap", "fsleyes", "NiftyView"]:
         raise ValueError(
-            "Viewer not known. Select between 'itksnap', 'fslview' and 'niftyview'")
+            "Viewer not known. Select between 'itksnap', 'fsleyes' and 'NiftyView'")
 
     # Convert to list objects
     if type(image_sitk) is not list:
@@ -1466,7 +1469,7 @@ def show_sitk_image(image_sitk,
         cmds[ctr] = ph.get_function_call_itksnap(
             filenames, filename_segmentation)
         ctr = ctr+1
-        cmds[ctr] = ph.get_function_call_fslview(
+        cmds[ctr] = ph.get_function_call_fsleyes(
             filenames, filename_segmentation)
         ctr = ctr+1
         cmds[ctr] = ph.get_function_call_niftyview(
@@ -1488,7 +1491,7 @@ def show_sitk_image(image_sitk,
 # \param      show_comparison_file  choose whether comparison file shall be
 #                                   produced to reproduce visualization at a
 #                                   later stage
-# \param      viewer                Can be "itksnap", "fslview", "niftyview"
+# \param      viewer                Can be "itksnap", "fsleyes", "NiftyView"
 # \param      dir_output            Output directory for writing files in order
 #                                   to open them
 # \param      default_pixel_value   default pixel value for interpolation,
@@ -1500,7 +1503,7 @@ def show_stacks(stacks,
                 segmentation=None,
                 show_comparison_file=False,
                 name_comparison_file="showComparison.py",
-                viewer="itksnap",
+                viewer=VIEWER,
                 dir_output=DIR_TMP,
                 default_pixel_value=0):
 

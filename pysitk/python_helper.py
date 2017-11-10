@@ -16,6 +16,7 @@ import contextlib
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+import matplotlib.cm
 import time
 import errno
 import datetime
@@ -23,12 +24,11 @@ from PIL import Image
 import itertools
 
 from pysitk.definitions import DIR_TMP
-from pysitk.definitions import ITKSNAP_EXE
-from pysitk.definitions import FSLVIEW_EXE
-from pysitk.definitions import NIFTYVIEW_EXE
+from pysitk.definitions import ITKSNAP_EXE, FSLVIEW_EXE, NIFTYVIEW_EXE
+from pysitk.definitions import VIEWER
 
 ##
-COLORS = [
+COLORS_STANDARD = [
     "r",        # red
     "b",        # blue
     "g",        # green
@@ -39,13 +39,41 @@ COLORS = [
     "w",        # white
 ]
 
+
+# Tableau20
+COLORS_TABLEAU20 = np.array([
+    (31, 119, 180),
+    (174, 199, 232),
+    (255, 127, 14),
+    (255, 187, 120),
+    (44, 160, 44),
+    (152, 223, 138),
+    (214, 39, 40),
+    (255, 152, 150),
+    (148, 103, 189),
+    (197, 176, 213),
+    (140, 86, 75),
+    (196, 156, 148),
+    (227, 119, 194),
+    (247, 182, 210),
+    (127, 127, 127),
+    (199, 199, 199),
+    (188, 189, 34),
+    (219, 219, 141),
+    (23, 190, 207),
+    (158, 218, 229)]) / 255.
+
+# https://matplotlib.org/users/colormaps.html
+COLORS_TAB20 = [matplotlib.cm.tab20(x/10.) for x in range(0, 10)]
+COLORS = COLORS_TAB20
+
 MARKERS = [
-    "s",        # square
     "o",        # circle
+    "s",        # square
     "v",        # triangle_down
-    "x",        # x
-    "p",        # pentagon
     "X",        # x (filled)
+    "p",        # pentagon
+    "x",        # x
     "*",        # star
     "P",        # plus (filled)
     "^",        # triangle_up
@@ -279,8 +307,8 @@ def itksnap(path_to_filename):
 #
 # \param      path_to_filename  The path to filename as string
 #
-def fslview(path_to_filename):
-    show_nifti(path_to_filename, viewer="fslview")
+def fsleyes(path_to_filename):
+    show_nifti(path_to_filename, viewer="fsleyes")
 
 
 ##
@@ -298,10 +326,10 @@ def niftyview(path_to_filename):
 # \date       2017-07-06 12:34:12+0100
 #
 # \param      path_to_filename  The path to filename as string;
-# \param      viewer            The viewer; either "fslview", "itksnap" or
+# \param      viewer            The viewer; either "fsleyes", "itksnap" or
 #                               "niftyview"
 #
-def show_nifti(path_to_filename, viewer="itksnap"):
+def show_nifti(path_to_filename, viewer=VIEWER):
     show_niftis([path_to_filename], viewer=viewer)
 
 
@@ -310,10 +338,10 @@ def show_nifti(path_to_filename, viewer="itksnap"):
 # \date       2017-07-06 12:36:05+0100
 #
 # \param      paths_to_filenames  List of strings containing paths to filenames
-# \param      viewer            The viewer; either "fslview", "itksnap" or
+# \param      viewer            The viewer; either "fsleyes", "itksnap" or
 #                               "niftyview"
 #
-def show_niftis(paths_to_filenames, viewer="itksnap"):
+def show_niftis(paths_to_filenames, viewer=VIEWER):
     cmd = globals()["get_function_call_" + viewer](paths_to_filenames)
     execute_command(cmd)
 
@@ -361,7 +389,7 @@ def get_function_call_itksnap(filenames, filename_segmentation=None):
 #
 # \return     string to be executed.
 #
-def get_function_call_fslview(filenames, filename_segmentation=None):
+def get_function_call_fsleyes(filenames, filename_segmentation=None):
 
     cmd = FSLVIEW_EXE + " \\\n"
     for i in range(0, len(filenames)):
@@ -385,7 +413,7 @@ def get_function_call_fslview(filenames, filename_segmentation=None):
 #
 # \return     string to be executed.
 #
-def get_function_call_niftyview(filenames, filename_segmentation=None):
+def get_function_call_NiftyView(filenames, filename_segmentation=None):
 
     cmd = NIFTYVIEW_EXE + " \\\n"
     for i in range(0, len(filenames)):
@@ -1098,6 +1126,13 @@ def print_info(text, newline=True, prefix="--- "):
     else:
         sys.stdout.write(prefix + text)
         sys.stdout.flush()
+
+
+def print_warning(text, prefix="WARNING: ", symbol="X"):
+    print_line_separator(symbol=symbol, add_newline=True)
+    print_info(prefix + text)
+    print_line_separator(symbol=symbol, add_newline=False)
+    print("")
 
 
 def print_title(text, symbol="*", add_newline=False):
