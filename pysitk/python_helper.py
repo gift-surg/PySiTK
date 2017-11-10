@@ -16,6 +16,7 @@ import contextlib
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+import matplotlib.cm
 import time
 import errno
 import datetime
@@ -27,7 +28,7 @@ from pysitk.definitions import ITKSNAP_EXE, FSLVIEW_EXE, NIFTYVIEW_EXE
 from pysitk.definitions import VIEWER
 
 ##
-COLORS = [
+COLORS_STANDARD = [
     "r",        # red
     "b",        # blue
     "g",        # green
@@ -38,13 +39,41 @@ COLORS = [
     "w",        # white
 ]
 
+
+# Tableau20
+COLORS_TABLEAU20 = np.array([
+    (31, 119, 180),
+    (174, 199, 232),
+    (255, 127, 14),
+    (255, 187, 120),
+    (44, 160, 44),
+    (152, 223, 138),
+    (214, 39, 40),
+    (255, 152, 150),
+    (148, 103, 189),
+    (197, 176, 213),
+    (140, 86, 75),
+    (196, 156, 148),
+    (227, 119, 194),
+    (247, 182, 210),
+    (127, 127, 127),
+    (199, 199, 199),
+    (188, 189, 34),
+    (219, 219, 141),
+    (23, 190, 207),
+    (158, 218, 229)]) / 255.
+
+# https://matplotlib.org/users/colormaps.html
+COLORS_TAB20 = [matplotlib.cm.tab20(x/10.) for x in range(0, 10)]
+COLORS = COLORS_TAB20
+
 MARKERS = [
-    "s",        # square
     "o",        # circle
+    "s",        # square
     "v",        # triangle_down
-    "x",        # x
-    "p",        # pentagon
     "X",        # x (filled)
+    "p",        # pentagon
+    "x",        # x
     "*",        # star
     "P",        # plus (filled)
     "^",        # triangle_up

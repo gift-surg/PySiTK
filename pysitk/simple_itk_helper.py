@@ -651,20 +651,22 @@ def write_itk_image(image_itk, filename):
 # \param      image_sitk    Image as sitk.Image object
 # \param      path_to_file  path to filename
 #
-def write_nifti_image_sitk(image_sitk, path_to_file):
+def write_nifti_image_sitk(image_sitk, path_to_file, verbose=False):
 
     ph.create_directory(os.path.dirname(path_to_file))
     sitk.WriteImage(image_sitk, path_to_file)
+    if verbose:
+        ph.print_info("Image written to %s." % path_to_file)
 
     # Use fslorient to copy q-form to s-form. However, in case of a 3D slice,
     # it would set dim0 = 2 incorrectly. Using fslmodhd for such a case seems
     # to do the trick as it updates the s-form as well.
     if image_sitk.GetDimension() == 3 and image_sitk.GetSize()[-1] == 1:
         flag = ph.execute_command(
-            "fslmodhd %s dim0 3" % path_to_file, verbose=False)
+            "fslmodhd %s dim0 3" % path_to_file, verbose=verbose)
     else:
         flag = ph.execute_command(
-            "fslorient -copyqform2sform %s" % path_to_file, verbose=False)
+            "fslorient -copyqform2sform %s" % path_to_file, verbose=verbose)
 
     if flag != 0:
         ph.print_warning(
