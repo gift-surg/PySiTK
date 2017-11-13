@@ -22,6 +22,8 @@ import errno
 import datetime
 from PIL import Image
 import itertools
+import shutil
+
 
 from pysitk.definitions import DIR_TMP
 from pysitk.definitions import ITKSNAP_EXE, FSLVIEW_EXE, NIFTYVIEW_EXE
@@ -1218,12 +1220,20 @@ def create_directory(directory, delete_files=False, verbose=False):
 #
 def clear_directory(directory, verbose=True):
 
-    if directory[-1] not in ["/"]:
-        directory += "/"
+    if directory_exists(directory):
+        shutil.rmtree(directory)
+        if verbose:
+            print_info("All files in " + directory + " are removed.")
+    else:
+        if verbose:
+            print_info("Directory %s did not exist. It was created now."
+                 % directory)
+    create_directory(directory)
 
-    os.system("rm -rf " + directory + "*")
-    if verbose:
-        print_info("All files in " + directory + " are removed.")
+    # if directory[-1] not in ["/"]:
+    #     directory += "/"
+
+    # os.system("rm -rf " + directory + "*")
 
 
 ##
