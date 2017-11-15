@@ -15,9 +15,6 @@ Installation of the external dependencies:
 Clone the PySiTK repository by
 * `git clone git@github.com:gift-surg/PySiTK.git` 
 
-Install all Python-dependencies by 
-* `pip install -r requirements.txt`
-
 Install PySiTK by running
 * `pip install -e .`
 
