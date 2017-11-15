@@ -15,7 +15,7 @@ long_description = "This package contains scripts to facilitate IO, " \
     "printing, plotting, ... and the interaction between SimpleITK and WrapITK"
 
 setup(name='PySiTK',
-      version='0.1.dev1',
+      version='0.1',
       description='Python SimpleITK/WrapITK helper scripts',
       long_description=long_description,
       url='https://github.com/gift-surg/PySiTK',
@@ -38,8 +38,6 @@ setup(name='PySiTK',
       zip_safe=False,
       keywords='development ITK SimpleITK',
       classifiers=[
-          'Development Status :: 3 - Alpha',
-
           'Intended Audience :: Developers',
           'Intended Audience :: Healthcare Industry',
           'Intended Audience :: Science/Research',
