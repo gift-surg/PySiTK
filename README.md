@@ -16,7 +16,7 @@ Clone the PySiTK repository by
 * `git clone git@github.com:gift-surg/PySiTK.git` 
 
 Install PySiTK by running
-* `pip install -e .`
+* `pip install .`
 
 
 ## Licensing and Copyright

@@ -372,7 +372,7 @@ def get_function_call_itksnap(filenames, filename_segmentation=None):
 
     # Add segmentation
     if filename_segmentation is not None:
-        cmd += "-s "
+        cmd += "-s \\\n"
         cmd += filename_segmentation + " \\\n"
 
     # Add termination
@@ -415,7 +415,7 @@ def get_function_call_fsleyes(filenames, filename_segmentation=None):
 #
 # \return     string to be executed.
 #
-def get_function_call_NiftyView(filenames, filename_segmentation=None):
+def get_function_call_niftyview(filenames, filename_segmentation=None):
 
     cmd = NIFTYVIEW_EXE + " \\\n"
     for i in range(0, len(filenames)):
@@ -1411,11 +1411,13 @@ def read_file_line_by_line(path_to_file):
 #
 # \param      filename  The filename including filename extension
 #
-def write_image(nda, filename):
+def write_image(nda, filename, verbose=True):
+    # Convert to integer image between 0 and 255
     nda = np.round(np.array(nda)).astype(np.uint8)
     im = Image.fromarray(nda)
     im.save(filename)
-    print_info("Data array written to %s." % (filename))
+    if verbose:
+        print_info("Data array written to %s." % (filename))
 
 
 ##
