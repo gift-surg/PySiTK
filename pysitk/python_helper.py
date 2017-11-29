@@ -372,7 +372,7 @@ def get_function_call_itksnap(filenames, filename_segmentation=None):
 
     # Add segmentation
     if filename_segmentation is not None:
-        cmd += "-s "
+        cmd += "-s \\\n"
         cmd += filename_segmentation + " \\\n"
 
     # Add termination

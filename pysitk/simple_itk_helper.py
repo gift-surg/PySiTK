@@ -1264,7 +1264,7 @@ def write_executable_file(cmds,
     # Substitute commands
     for i in range(0, len(cmds)):
         cmd = cmds[i]
-        cmd = re.sub(dir_output, '" directory + "', cmd)
+        cmd = re.sub(dir_output + "/", '" directory + "', cmd)
         cmd = re.sub(ITKSNAP_EXE, 'ITKSNAP_EXE + "', cmd)
         cmd = re.sub(FSLVIEW_EXE, 'FSLVIEW_EXE + "', cmd)
         cmd = re.sub(NIFTYVIEW_EXE, 'NIFTYVIEW_EXE + "', cmd)
@@ -1315,6 +1315,7 @@ def write_executable_file(cmds,
 
         # for ITK-SNAP
         cmd = re.sub('\\\\\\n-o', '\\\\\\n" "-o', cmd)
+        cmd = re.sub('\\\\\\n-s', '\\\\\\n" "-s', cmd)
 
         # put each image to new line
         if i == 0:
@@ -1502,7 +1503,7 @@ def show_stacks(stacks,
                 label=None,
                 segmentation=None,
                 show_comparison_file=False,
-                name_comparison_file="showComparison.py",
+                name_comparison_file="show_comparison.py",
                 viewer=VIEWER,
                 dir_output=DIR_TMP,
                 default_pixel_value=0):
