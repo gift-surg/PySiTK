@@ -1227,7 +1227,7 @@ def clear_directory(directory, verbose=True):
     else:
         if verbose:
             print_info("Directory %s did not exist. It was created now."
-                 % directory)
+                       % directory)
     create_directory(directory)
 
     # if directory[-1] not in ["/"]:
@@ -1458,3 +1458,18 @@ def write_array_to_file(path_to_file, array, format="%.10e", delimiter="\t", acc
         print_info("File '%s' written" % (path_to_file))
     elif access_mode == "a":
         print_info("File '%s' updated" % (path_to_file))
+
+
+##
+# Inserts a suffix between filename and its extension
+# \date       2017-11-30 21:05:12+0000
+#
+# \param      filename  The filename as string
+# \param      suffix    The suffix as string
+#
+# \return appended filename as string
+#
+def append_to_filename(filename, suffix):
+    splits = filename.split(".")
+    splits[0] += suffix
+    return ".".join(splits)
