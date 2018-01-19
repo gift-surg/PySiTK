@@ -343,8 +343,9 @@ def show_nifti(path_to_filename, viewer=VIEWER):
 # \param      viewer            The viewer; either "fsleyes", "itksnap" or
 #                               "niftyview"
 #
-def show_niftis(paths_to_filenames, viewer=VIEWER):
-    cmd = globals()["get_function_call_" + viewer](paths_to_filenames)
+def show_niftis(paths_to_filenames, viewer=VIEWER, segmentation=None):
+    cmd = globals()["get_function_call_" + viewer](
+        paths_to_filenames, segmentation)
     execute_command(cmd)
 
 
@@ -440,7 +441,7 @@ def get_function_call_niftyview(filenames, filename_segmentation=None):
 # \return     Input as either string, int or float, depending on what was
 #             entered
 #
-def read_input(infotext="None", default=None):
+def read_input(infotext, default=None):
     if default is None:
         text_in = raw_input(infotext + ": ")
         return text_in
@@ -1403,6 +1404,23 @@ def read_file_line_by_line(path_to_file):
         lines = f.readlines()
 
     return lines
+
+##
+# Writes a file line by line.
+# \date       2018-01-19 12:23:05+0000
+#
+# \param      path_to_file  The path to file as string
+# \param      lines         The lines as list
+# \param      access_mode   The access mode
+#
+# \return     { description_of_the_return_value }
+#
+def write_file_line_by_line(path_to_file, lines, access_mode="w"):
+    file_handle = safe_open(path_to_file, access_mode)
+    for line in lines:
+        file_handle.write(line)
+    file_handle.close()
+    print_info("Lines successfully written to %s." % path_to_file)
 
 
 ##
