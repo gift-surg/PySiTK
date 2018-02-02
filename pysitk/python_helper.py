@@ -23,7 +23,8 @@ import datetime
 from PIL import Image
 import itertools
 import shutil
-
+import pandas as pd
+import seaborn as sns
 
 from pysitk.definitions import DIR_TMP
 from pysitk.definitions import ITKSNAP_EXE, FSLVIEW_EXE, NIFTYVIEW_EXE
@@ -348,6 +349,8 @@ def show_niftis(paths_to_filenames, viewer=VIEWER, segmentation=None):
         paths_to_filenames, segmentation)
     execute_command(cmd)
 
+    return cmd
+
 
 ##
 # Gets the function call for ITK-SNAP.
@@ -508,20 +511,20 @@ def show_curves(y, x=None, xlabel="", ylabel="", title="", xlim=None, ylim=None,
     matplotlib.rc('text', usetex=use_tex)
 
     if x is None:
-        x = [None]*N_curves
+        x = [None] * N_curves
         for i in range(N_curves):
-            x[i] = np.arange(y[i].size)+1
+            x[i] = np.arange(y[i].size) + 1
     elif type(x) is not list:
         x = [x] * N_curves
 
     if type(linewidth) is not list and not isinstance(linewidth, np.ndarray):
-        linewidth = [linewidth]*N_curves
+        linewidth = [linewidth] * N_curves
 
     if type(labels) is not list:
-        labels = [labels]*N_curves
+        labels = [labels] * N_curves
 
     if type(linestyle) is not list:
-        linestyle = [linestyle]*N_curves
+        linestyle = [linestyle] * N_curves
 
     if figuresize is None:
         fig = plt.figure(fig_number)
@@ -655,7 +658,7 @@ def show_images(images, titles=None, cmap="Greys_r", use_colorbar=False, fontfam
     # Plot figure
     if show_compact:
         if figuresize is None:
-            fig = plt.figure(fig_number, figsize=2*np.array(grid[::-1]))
+            fig = plt.figure(fig_number, figsize=2 * np.array(grid[::-1]))
         else:
             fig = plt.figure(fig_number, figsize=figuresize[::-1])
 
@@ -671,11 +674,11 @@ def show_images(images, titles=None, cmap="Greys_r", use_colorbar=False, fontfam
 
     for i in range(0, N_images):
         if i is 0:
-            ax1 = plt.subplot(grid[0], grid[1], i+1)
+            ax1 = plt.subplot(grid[0], grid[1], i + 1)
             ax1.set_aspect(aspect_ratio)
         else:
             # ax2 = plt.subplot(gs1[i])
-            ax2 = plt.subplot(grid[0], grid[1], i+1, sharex=ax1)
+            ax2 = plt.subplot(grid[0], grid[1], i + 1, sharex=ax1)
             ax2.set_aspect(aspect_ratio)
         im = plt.imshow(images[i], cmap=cmap, vmin=value_min, vmax=value_max)
         if titles is not None:
@@ -703,7 +706,6 @@ def show_images(images, titles=None, cmap="Greys_r", use_colorbar=False, fontfam
 
     return fig
 
-
 ##
 # Shows single 2D/3D array or a list of 2D arrays.
 # \date       2017-02-07 10:06:25+0000
@@ -724,6 +726,8 @@ def show_images(images, titles=None, cmap="Greys_r", use_colorbar=False, fontfam
 # \param      fontsize          The fontsize
 # \param      fontname          "Arial", "Times New Roman" etc
 #
+
+
 def show_arrays(nda,
                 title=None,
                 cmap="Greys_r",
@@ -884,8 +888,8 @@ def _show_3D_array_slice_by_slice(nda3D_zyx, title="data", cmap="Greys_r", color
         create_directory(directory)
 
         # Save figure to directory
-        save_fig(fig, directory, title+"_slice_0_to_" +
-                 str(N_slices-1)+".pdf")
+        save_fig(fig, directory, title + "_slice_0_to_" +
+                 str(N_slices - 1) + ".pdf")
 
     return fig
 
@@ -960,11 +964,11 @@ def _show_2D_array_list_array_by_array(nda2D_list,
     for i in range(0, N_slices):
         if i is 0:
             # ax1 = plt.subplot(gs1[i])
-            ax1 = plt.subplot(grid[0], grid[1], i+1)
+            ax1 = plt.subplot(grid[0], grid[1], i + 1)
             ax1.set_aspect(axis_aspect)
         else:
             # ax2 = plt.subplot(gs1[i])
-            ax2 = plt.subplot(grid[0], grid[1], i+1, sharex=ax1)
+            ax2 = plt.subplot(grid[0], grid[1], i + 1, sharex=ax1)
             ax2.set_aspect(axis_aspect)
         im = plt.imshow(nda2D_list[i], cmap=cmap,
                         vmin=value_min, vmax=value_max)
@@ -1012,15 +1016,15 @@ def _get_grid_size(N_slices):
     if N_slices <= 3:
         grid = (1, N_slices)
     elif N_slices > 3 and N_slices <= 10:
-        grid = (2, np.ceil(N_slices/2.).astype('int'))
+        grid = (2, np.ceil(N_slices / 2.).astype('int'))
     elif N_slices > 10 and N_slices <= 15:
-        grid = (3, np.ceil(N_slices/3.).astype('int'))
+        grid = (3, np.ceil(N_slices / 3.).astype('int'))
     elif N_slices > 15 and N_slices <= 20:
-        grid = (4, np.ceil(N_slices/3.).astype('int'))
+        grid = (4, np.ceil(N_slices / 3.).astype('int'))
     elif N_slices > 21 and N_slices <= 30:
-        grid = (5, np.ceil(N_slices/4.).astype('int'))
+        grid = (5, np.ceil(N_slices / 4.).astype('int'))
     else:
-        grid = (6, np.ceil(N_slices/5.).astype('int'))
+        grid = (6, np.ceil(N_slices / 5.).astype('int'))
 
     return grid
 
@@ -1146,13 +1150,13 @@ def print_title(text, symbol="*", add_newline=False):
 def print_subtitle(text, symbol="*", add_newline=True):
     if add_newline:
         print("")
-    print(3*symbol + " " + text + " " + 3*symbol)
+    print(3 * symbol + " " + text + " " + 3 * symbol)
 
 
 def print_line_separator(add_newline=True, symbol="*", length=99):
     if add_newline:
         print("\n")
-    print(symbol*length)
+    print(symbol * length)
 
 
 def print_execution(cmd):
@@ -1250,6 +1254,11 @@ def delete_directory(directory, verbose=True):
         print_info("Directory " + directory + " deleted.")
 
 
+def delete_file(path_to_file, verbose=True):
+    os.remove(path_to_file)
+    if verbose:
+        print_info("File '%s' deleted." % path_to_file)
+
 ##
 # Gets the current date in format year, month and day
 # \date       2017-08-08 16:34:17+0100
@@ -1258,6 +1267,8 @@ def delete_directory(directory, verbose=True):
 #
 # \return     The current date as string
 #
+
+
 def get_current_date(separator=""):
     now = datetime.datetime.now()
     date = "%s%s%s%s%s" % (
@@ -1322,7 +1333,7 @@ def get_time_stamp(separator=", ", separator_date="-", separator_time=":"):
 #
 def create_image_grid(shape, spacing, value_bg=1, value_fg=0):
 
-    nda = np.ones(shape)*value_bg
+    nda = np.ones(shape) * value_bg
 
     for i in range(0, shape[0]):
         nda[i, 0::spacing] = value_fg
@@ -1347,12 +1358,12 @@ def create_image_grid(shape, spacing, value_bg=1, value_fg=0):
 #
 def create_image_with_slope(shape, slope=1, value_bg=0, value_fg=1, offset=0):
 
-    nda = np.ones(shape)*value_bg
+    nda = np.ones(shape) * value_bg
 
     i = 0
     while i < nda.shape[0]:
-        nda[i, :] = np.max([np.min([slope*i - offset, value_fg]), 0])
-        i = i+1
+        nda[i, :] = np.max([np.min([slope * i - offset, value_fg]), 0])
+        i = i + 1
 
     return nda
 
@@ -1372,13 +1383,13 @@ def create_image_pyramid(length, slope=1, value_bg=0, value_fg=500, offset=(0, 0
 
     shape = np.array([length, length])
 
-    nda = np.ones(shape)*value_bg
+    nda = np.ones(shape) * value_bg
 
-    for i in range(0, nda.shape[0]/2):
-        nda[i:-i, i:-i] = np.min([slope*i, value_fg])
+    for i in range(0, nda.shape[0] / 2):
+        nda[i:-i, i:-i] = np.min([slope * i, value_fg])
 
     if np.abs(offset).sum() > 0:
-        nda_offset = np.ones(shape)*value_bg
+        nda_offset = np.ones(shape) * value_bg
         nda_offset[offset[0]:, offset[1]:] = nda[0:-offset[0], 0:-offset[1]]
 
         nda = nda_offset
@@ -1404,6 +1415,7 @@ def read_file_line_by_line(path_to_file):
         lines = f.readlines()
 
     return lines
+
 
 ##
 # Writes a file line by line.
@@ -1445,9 +1457,17 @@ def write_image(nda, filename, verbose=True):
 # \param      path_to_file  Path to filename with extension. e.g. "txt"
 # \param      text          The text
 # \param      access_mode   The access mode
+# \param      verbose       The verbose
 # \param      type  "w" for write, "a" for append
 #
-def write_to_file(path_to_file, text, access_mode="w", verbose=True):
+# \return     { description_of_the_return_value }
+#
+def write_to_file(
+    path_to_file,
+    text,
+    access_mode="w",
+    verbose=True
+):
     file_handle = safe_open(path_to_file, access_mode)
     file_handle.write(text)
     file_handle.close()
@@ -1467,15 +1487,24 @@ def write_to_file(path_to_file, text, access_mode="w", verbose=True):
 # \param      format        The format
 # \param      delimiter     The delimiter
 # \param      access_mode   The access mode
+# \param      verbose       The verbose
 #
-def write_array_to_file(path_to_file, array, format="%.10e", delimiter="\t", access_mode="a"):
+def write_array_to_file(
+    path_to_file,
+    array,
+    format="%.10e",
+    delimiter="\t",
+    access_mode="a",
+    verbose=True
+):
     file_handle = safe_open(path_to_file, access_mode)
     np.savetxt(file_handle, array, fmt=format, delimiter=delimiter)
     file_handle.close()
-    if access_mode == "w":
-        print_info("File '%s' written" % (path_to_file))
-    elif access_mode == "a":
-        print_info("File '%s' updated" % (path_to_file))
+    if verbose:
+        if access_mode == "w":
+            print_info("File '%s' written" % (path_to_file))
+        elif access_mode == "a":
+            print_info("File '%s' updated" % (path_to_file))
 
 
 ##
