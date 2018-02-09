@@ -7,18 +7,6 @@ import matplotlib.pyplot as plt
 
 import pysitk.python_helper as ph
 
-##
-# Helper to make current figure fullscreen
-# \date       2018-02-02 19:22:54+0000
-#
-def make_figure_fullscreen():
-    try:
-        # Open windows (and also save them) in full screen
-        manager = plt.get_current_fig_manager()
-        manager.full_screen_toggle()
-    except:
-        pass
-
 
 ##
 # Prints a table from array(s)
@@ -43,6 +31,68 @@ def print_table_from_array(nda, nda_std=None, rows=None, cols=None):
         nda_print[:, 1::2] = nda_std
     df = pd.DataFrame(nda_print, rows, cols)
     print(df)
+
+
+def write_array_to_latex(
+        path_to_file,
+        nda,
+        nda_std=None,
+        rows=None,
+        cols=None,
+        row_title=None,
+        decimal_places=2,
+):
+
+    lines = []
+    sep = " & "
+
+    # \begin{tabular}{tabular_options}
+    tabular_options = 'c' * nda.shape[1]
+    if rows is not None:
+        tabular_options = 'l' + tabular_options
+    lines.append("\\begin{tabular}{%s}" % tabular_options)
+
+    # Header: column titles of table
+    line_args = ["\\bf %s" % c for c in cols]
+    if rows is not None:
+        if row_title is None:
+            line_args.insert(0, "")
+        else:
+            line_args.insert(0, "\\bf %s" % row_title)
+    lines.append(sep.join(line_args))
+    lines.append("\\hline")
+
+    # Entries of the table
+    for i_row in range(nda.shape[0]):
+        line_args = []
+        if nda_std is None:
+            line_args = ["\\num{%.2f}" % f for f in nda[i_row, :]]
+        else:
+            line_args = ["\\num{%.2f \\pm %.2f}" % (m, s)
+                         for (m, s) in zip(nda[i_row, :], nda_std[i_row, :])]
+        if rows is not None:
+            line_args.insert(0, "\\bf %s" % rows[i_row])
+        lines.append(sep.join(line_args))
+
+    # \end{tabular}
+    lines.append("\\end{tabular}")
+
+    text = " \\\\\n".join(lines)
+    print text
+    ph.write_to_file(path_to_file, text, access_mode="w", verbose=True)
+
+
+##
+# Helper to make current figure fullscreen
+# \date       2018-02-02 19:22:54+0000
+#
+def make_figure_fullscreen():
+    try:
+        # Open windows (and also save them) in full screen
+        manager = plt.get_current_fig_manager()
+        manager.full_screen_toggle()
+    except:
+        pass
 
 
 ##
@@ -139,7 +189,7 @@ def show_scatter_plot(x, y, x_label, y_label):
              marker=marker_points,
              # markerfacecolor=markerfacecolor_points,
              linestyle="")
-    
+
     # Plot identity as orientation line
     axes = plt.gca()
     xmin, xmax = axes.get_xlim()
@@ -156,7 +206,7 @@ def show_scatter_plot(x, y, x_label, y_label):
 
 ##
 # Shows the Bland Altman plot.
-# 
+#
 # \date       2018-02-02 19:24:03+0000
 #
 # \param      x        { parameter_description }
