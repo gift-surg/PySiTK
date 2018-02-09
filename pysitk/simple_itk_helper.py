@@ -126,7 +126,7 @@ def get_sitk_image_direction_from_sitk_affine_transform(affine_transform_sitk,
     except:
         spacing_sitk = np.array(image_or_spacing_sitk)
 
-    S_inv_sitk = np.diag(1/spacing_sitk)
+    S_inv_sitk = np.diag(1 / spacing_sitk)
 
     A = np.array(affine_transform_sitk.GetMatrix()).reshape(dim, dim)
 
@@ -340,26 +340,26 @@ def get_altered_field_of_view_sitk_image(image_sitk,
         boundary_j_voxel = np.round(boundary_j / spacing[1])
 
         # compute new shape of image
-        size[0] += 2*boundary_i_voxel
-        size[1] += 2*boundary_j_voxel
+        size[0] += 2 * boundary_i_voxel
+        size[1] += 2 * boundary_j_voxel
 
         if dimension is 3:
             boundary_k_voxel = np.round(boundary_k / spacing[2])
 
-            size[2] += 2*boundary_k_voxel
+            size[2] += 2 * boundary_k_voxel
 
     # Dimension is given in voxels
     elif unit == "voxel":
         # compute new shape of image
-        size[0] += 2*boundary_i
-        size[1] += 2*boundary_j
+        size[0] += 2 * boundary_i
+        size[1] += 2 * boundary_j
 
         # express change in mm
         boundary_i *= spacing[0]
         boundary_j *= spacing[1]
 
         if dimension is 3:
-            size[2] += 2*boundary_k
+            size[2] += 2 * boundary_k
             boundary_k *= spacing[2]
 
     else:
@@ -370,12 +370,12 @@ def get_altered_field_of_view_sitk_image(image_sitk,
     a_x = image_sitk.TransformIndexToPhysicalPoint(e_x) - origin
     a_y = image_sitk.TransformIndexToPhysicalPoint(e_y) - origin
 
-    translation = a_x/np.linalg.norm(a_x) * boundary_i
-    translation += a_y/np.linalg.norm(a_y) * boundary_j
+    translation = a_x / np.linalg.norm(a_x) * boundary_i
+    translation += a_y / np.linalg.norm(a_y) * boundary_j
 
     if dimension is 3:
         a_z = image_sitk.TransformIndexToPhysicalPoint(e_z) - origin
-        translation += a_z/np.linalg.norm(a_z) * boundary_k
+        translation += a_z / np.linalg.norm(a_z) * boundary_k
 
     origin = origin - translation
 
@@ -498,7 +498,7 @@ def read_sitk_vector_image(filename, dtype=np.float64):
     # Get spacing (only for image dimensions, i.e. not for the vector
     # component)
     spacing_sitk = np.array(image_nib.header.get_zooms())[0:R_nib.shape[0]]
-    S_nib_inv = np.diag(1/spacing_sitk)
+    S_nib_inv = np.diag(1 / spacing_sitk)
 
     direction_sitk = R.dot(R_nib).dot(S_nib_inv).flatten()
 
@@ -671,6 +671,35 @@ def write_nifti_image_sitk(image_sitk, path_to_file, verbose=False):
     if flag != 0:
         ph.print_warning(
             "Only q-form is set as fslorient was not successful!")
+
+
+##
+# Reads a nifti image and returns sitk.Image object.
+# 
+# Potential nan and inf values are replaced by numerical values
+# \date       2018-02-09 00:21:59+0000
+#
+# \param      file_path    The file path as string
+# \param      pixel_type   The pixel type as sitk object
+# \param      replace_nan  boolean to indicate whether nan should be replaced
+#
+# \return     Nifti image as sitk.Object
+#
+def read_nifti_image_sitk(
+        file_path,
+        pixel_type=sitk.sitkUnknown,
+        replace_nan=1):
+    image_sitk = sitk.ReadImage(str(file_path), pixel_type)
+
+    # Replace nan (and inf) with numerical values
+    if replace_nan:
+        image_nda = sitk.GetArrayFromImage(image_sitk)
+        image_nda = np.nan_to_num(image_nda)
+        image_sitk_ = sitk.GetImageFromArray(image_nda)
+        image_sitk_.CopyInformation(image_sitk)
+        return image_sitk_
+
+    return image_sitk
 
 
 ##
@@ -921,7 +950,7 @@ def get_itk_from_sitk_direction(direction_sitk):
 
     for i in range(0, dim):
         for j in range(0, dim):
-            m.set(i, j, direction_sitk[dim*i + j])
+            m.set(i, j, direction_sitk[dim * i + j])
 
     return itk.Matrix[itk.D, dim, dim](m)
 
@@ -938,10 +967,10 @@ def get_sitk_from_itk_direction(direction_itk):
     vnl_matrix = direction_itk.GetVnlMatrix()
     dim = np.sqrt(vnl_matrix.size()).astype('int')
 
-    direction_sitk = np.zeros(dim*dim)
+    direction_sitk = np.zeros(dim * dim)
     for i in range(0, dim):
         for j in range(0, dim):
-            direction_sitk[i*dim + j] = vnl_matrix(i, j)
+            direction_sitk[i * dim + j] = vnl_matrix(i, j)
 
     return direction_sitk
 
@@ -1198,7 +1227,7 @@ def plot_compare_sitk_2D_images(image0_2D_sitk,
     fig = plt.figure(fig_number)
     plt.suptitle("intensity error norm = " +
                  str(np.linalg.norm(
-                     sitk.GetArrayFromImage(image0_2D_sitk-image1_2D_sitk))))
+                     sitk.GetArrayFromImage(image0_2D_sitk - image1_2D_sitk))))
 
     plt.subplot(1, 3, 1)
     plt.imshow(sitk.GetArrayFromImage(image0_2D_sitk), cmap="Greys_r")
@@ -1212,7 +1241,7 @@ def plot_compare_sitk_2D_images(image0_2D_sitk,
 
     plt.subplot(1, 3, 3)
     plt.imshow(sitk.GetArrayFromImage(
-        image0_2D_sitk-image1_2D_sitk), cmap="Greys_r")
+        image0_2D_sitk - image1_2D_sitk), cmap="Greys_r")
     plt.title("image_0 - image_1")
     plt.axis('off')
 
@@ -1252,7 +1281,8 @@ def plot_slices(slices, cmap="Greys_r", title="slice"):
 
 
 def write_executable_file(cmds,
-                          dir_output=DIR_TMP, filename="showComparison.py"):
+                          dir_output=DIR_TMP,
+                          filename="show_comparison.py"):
     now = datetime.datetime.now()
     date_time = str(now.year) + "-" + str(now.month).zfill(2) + \
         "-" + str(now.day).zfill(2) + " "
@@ -1404,7 +1434,7 @@ def show_sitk_image(image_sitk,
     # Ensure label and image_sitk have same length
     if len(label) is not len(image_sitk):
         tmp = label
-        label = [None]*len(image_sitk)
+        label = [None] * len(image_sitk)
         for i in range(0, len(image_sitk)):
             label[i] = tmp[0] + str(i)
 
@@ -1465,17 +1495,17 @@ def show_sitk_image(image_sitk,
     # Create python script for the command above
     if show_comparison_file:
 
-        cmds = [None]*3
+        cmds = [None] * 3
         ctr = 0
         cmds[ctr] = ph.get_function_call_itksnap(
             filenames, filename_segmentation)
-        ctr = ctr+1
+        ctr = ctr + 1
         cmds[ctr] = ph.get_function_call_fsleyes(
             filenames, filename_segmentation)
-        ctr = ctr+1
+        ctr = ctr + 1
         cmds[ctr] = ph.get_function_call_niftyview(
             filenames, filename_segmentation)
-        ctr = ctr+1
+        ctr = ctr + 1
 
         # Build executable file containing the information
         write_executable_file(cmds, dir_output=dir_output,
@@ -1509,13 +1539,13 @@ def show_stacks(stacks,
                 default_pixel_value=0):
 
     N_stacks = len(stacks)
-    images_sitk = [None]*N_stacks
+    images_sitk = [None] * N_stacks
 
     for i in range(0, N_stacks):
         images_sitk[i] = stacks[i].sitk
 
     if label is None:
-        label = [None]*N_stacks
+        label = [None] * N_stacks
         for i in range(0, N_stacks):
             label[i] = stacks[i].get_filename()
 
@@ -1631,7 +1661,7 @@ def get_downsampled_sitk_image(image_sitk,
     size = np.array(image_sitk.GetSize()).astype("int")
 
     if new_spacing is not None:
-        downsampling_factors = new_spacing/spacing
+        downsampling_factors = new_spacing / spacing
 
     else:
         # Convert to array
@@ -1645,8 +1675,8 @@ def get_downsampled_sitk_image(image_sitk,
         raise ValueError("Error: interpolator is not known")
 
     # Define new image space
-    spacing_new = spacing*downsampling_factors[0:dimension]
-    size_new = np.round(size/downsampling_factors[0:dimension]).astype("int")
+    spacing_new = spacing * downsampling_factors[0:dimension]
+    size_new = np.round(size / downsampling_factors[0:dimension]).astype("int")
 
     # Resampling
     image_sitk_resampled = sitk.Resample(
