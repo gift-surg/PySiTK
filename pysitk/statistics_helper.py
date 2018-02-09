@@ -41,6 +41,7 @@ def write_array_to_latex(
         cols=None,
         row_title=None,
         decimal_places=2,
+        verbose=0,
 ):
 
     lines = []
@@ -78,8 +79,9 @@ def write_array_to_latex(
     lines.append("\\end{tabular}")
 
     text = " \\\\\n".join(lines)
-    print text
     ph.write_to_file(path_to_file, text, access_mode="w", verbose=True)
+    if verbose:
+        print(text)
 
 
 ##
