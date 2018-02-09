@@ -79,7 +79,6 @@ def write_array_to_latex(
 
     text = " \\\\\n".join(lines)
     print text
-    ph.exit()
     ph.write_to_file(path_to_file, text, access_mode="w", verbose=True)
 
 

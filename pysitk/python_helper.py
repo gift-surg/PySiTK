@@ -1501,10 +1501,7 @@ def write_array_to_file(
     np.savetxt(file_handle, array, fmt=format, delimiter=delimiter)
     file_handle.close()
     if verbose:
-        if access_mode == "w":
-            print_info("File '%s' written" % (path_to_file))
-        elif access_mode == "a":
-            print_info("File '%s' updated" % (path_to_file))
+        print_info("Array written to '%s'" % (path_to_file))
 
 
 ##
