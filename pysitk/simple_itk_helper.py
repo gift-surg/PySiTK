@@ -677,6 +677,7 @@ def write_nifti_image_sitk(image_sitk, path_to_file, verbose=False):
 # Reads a nifti image and returns sitk.Image object.
 # 
 # Potential nan and inf values are replaced by numerical values
+# Remark: Not tested for vector images
 # \date       2018-02-09 00:21:59+0000
 #
 # \param      file_path    The file path as string
@@ -690,6 +691,10 @@ def read_nifti_image_sitk(
         pixel_type=sitk.sitkUnknown,
         replace_nan=1):
     image_sitk = sitk.ReadImage(str(file_path), pixel_type)
+
+    # Do not deal with vector images here
+    if image_sitk.GetNumberOfComponentsPerPixel() > 1:
+        return image_sitk
 
     # Replace nan (and inf) with numerical values
     if replace_nan:
