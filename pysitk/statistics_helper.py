@@ -223,24 +223,30 @@ def show_bland_altman_plot(x, y, x_label, y_label):
     color_lines = ph.COLORS_TABLEAU20[2]
     markerfacecolor_points = "white",
 
+    # Plot data
     plt.plot((x + y) / 2., x - y,
              color=color_points,
              marker=marker_points,
              # markerfacecolor=markerfacecolor_points,
              linestyle="")
 
-    mu = np.mean(x - y)
-    sigma = np.std(x - y)
-
     axes = plt.gca()
     xmin, xmax = axes.get_xlim()
 
+    # Plot mean and mean +- 1.96 sigma helper lines
+    mu = np.mean(x - y)
+    sigma = np.std(x - y)
     plt.plot([xmax, xmin], np.ones(2) * mu,
              color=color_lines, linestyle="-")
     plt.plot([xmax, xmin], np.ones(2) * (mu + sigma * 1.96),
              color=color_lines, linestyle="--")
     plt.plot([xmax, xmin], np.ones(2) * (mu - sigma * 1.96),
              color=color_lines, linestyle="--")
+    plt.plot([xmax, xmin], np.ones(2) * mu,
+             color=color_lines, linestyle="-")
+
+    # Plot zero line
+    axes.axhline(y=0, color='k')
 
     plt.xlabel("(%s + %s)/2" % (x_label, y_label))
     plt.ylabel("%s - %s" % (x_label, y_label))
