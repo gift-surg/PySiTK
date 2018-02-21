@@ -332,8 +332,8 @@ def niftyview(path_to_filename):
 # \param      viewer            The viewer; either "fsleyes", "itksnap" or
 #                               "niftyview"
 #
-def show_nifti(path_to_filename, viewer=VIEWER):
-    show_niftis([path_to_filename], viewer=viewer)
+def show_nifti(path_to_filename, viewer=VIEWER, segmentation=None):
+    show_niftis([path_to_filename], viewer=viewer, segmentation=segmentation)
 
 
 ##
@@ -350,6 +350,42 @@ def show_niftis(paths_to_filenames, viewer=VIEWER, segmentation=None):
     execute_command(cmd)
 
     return cmd
+
+
+##
+# Writes a executable to show niftis.
+# \date       2018-02-21 17:22:23+0000
+#
+# \param      paths_to_filenames  The paths to filenames
+# \param      dir_output          The dir output
+# \param      output_filename     The output filename
+# \param      viewer              The viewer
+# \param      segmentation        The segmentation
+#
+def write_show_niftis_exe(
+        paths_to_filenames,
+        dir_output,
+        output_filename="showComparison.sh",
+        viewer=VIEWER,
+        segmentation=None):
+    cmd_args = ["#!/bin/sh"]
+    cmd_args.append(globals()["get_function_call_" + viewer](
+        paths_to_filenames, segmentation))
+
+    cmd = "\n".join(cmd_args)
+    path_to_file = os.path.join(dir_output, output_filename)
+    write_to_file(path_to_file, cmd)
+    make_file_executable(path_to_file)
+
+
+##
+# Makes a a file executable.
+# \date       2018-02-21 17:22:40+0000
+#
+# \param      path_to_file  The path to file
+#
+def make_file_executable(path_to_file):
+    os.system("chmod +x %s" % path_to_file)
 
 
 ##
