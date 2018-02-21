@@ -11,6 +11,7 @@
 import os
 import sys
 import pickle
+import subprocess
 import numpy as np
 import contextlib
 import matplotlib
@@ -274,8 +275,18 @@ def exit():
     sys.exit()
 
 
+##
+# Kill all ITK-SNAP processes
+# \date       2018-02-21 17:36:54+0000
+#
+# \return     { description_of_the_return_value }
+#
 def killall_itksnap():
-    os.system("killall ITK-SNAP")
+    with open(os.devnull, "wb") as devnull:
+        subprocess.call(
+            ["killall", "itksnap"], stdout=devnull, stderr=subprocess.STDOUT)
+        subprocess.call(
+            ["killall", "ITK-SNAP"], stdout=devnull, stderr=subprocess.STDOUT)
 
 
 ##
