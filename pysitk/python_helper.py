@@ -449,12 +449,35 @@ def get_function_call_fsleyes(filenames, filename_segmentation=None):
         cmd += filenames[i] + " \\\n"
 
     if filename_segmentation is not None:
-        cmd += filename_segmentation + " -t 0.3 \\\n"
+        cmd += filename_segmentation + " --alpha 30 -cm hsv \\\n"
 
     cmd += "&"
 
     return cmd
 
+
+##
+# Gets the function call for FSL viewer.
+# \date       2017-06-28 17:55:35+0100
+#
+# \param      filenames              list of filenames. If more than one image,
+#                                    the remaining ones are overlaid
+# \param      filename_segmentation  filename of segmentation to be overlaid
+#
+# \return     string to be executed.
+#
+def get_function_call_fslview(filenames, filename_segmentation=None):
+
+    cmd = FSLVIEW_EXE + " \\\n"
+    for i in range(0, len(filenames)):
+        cmd += filenames[i] + " \\\n"
+
+    if filename_segmentation is not None:
+        cmd += filename_segmentation + " -t 0.3 \\\n"
+
+    cmd += "&"
+
+    return cmd
 
 ##
 # Gets the function call for NiftyView.
