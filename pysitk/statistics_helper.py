@@ -5,7 +5,11 @@ import seaborn as sns
 import itertools
 import matplotlib.pyplot as plt
 
+import scipy.stats
 import pysitk.python_helper as ph
+
+# Increase with so that there is no linebreak for wider tables
+pd.set_option('display.width', 1000)
 
 
 ##
@@ -24,12 +28,14 @@ def print_table_from_array(nda, nda_std=None, rows=None, cols=None):
         nda_print = nda
     else:
         nda_print = np.zeros((nda.shape[0], 2 * nda.shape[1]))
+        if cols is None:
+            cols = [""] * nda.shape[1]
         cols = ["%s (%s)" % (m, t)
                 for (m, t) in itertools.product(cols, ["mean", "std"])]
 
         nda_print[:, 0::2] = nda
         nda_print[:, 1::2] = nda_std
-    df = pd.DataFrame(nda_print, rows, cols)
+    df = pd.DataFrame(nda_print, index=rows, columns=cols)
     print(df)
 
 
@@ -167,6 +173,61 @@ def show_boxplot(data_dic, x_label, labels, ref="cls"):
     # sns.set_style("whitegrid")
 
     return b
+
+
+##
+# Run t-test on two related samples of scores
+# \date       2018-02-26 13:50:09+0000
+#
+# \param      x           array_like
+# \param      y           array_like, same shape as x
+# \param      axis        int, axis along which to compute test
+# \param      nan_policy  {'propagate’, 'raise’, 'omit'}
+#
+# \return     t-statistic, two-tailed p-value
+#
+def run_t_test_related(x, y, axis=0, nan_policy='omit'):
+    statistic, p_value = scipy.stats.ttest_rel(
+        x, y, axis=axis, nan_policy=nan_policy)
+    return statistic, p_value
+
+
+##
+# Run t-test for the means of two independent samples of scores
+# \date       2018-02-26 13:52:41+0000
+#
+# \param      x           array_like
+# \param      y           array_like
+# \param      axis        int, axis along which to compute test
+# \param      equal_var   bool, If True (default), perform a standard
+#                         independent 2 sample test that assumes equal
+#                         population variances
+# \param      nan_policy  {'propagate’, 'raise’, 'omit'}
+#
+# \return     t-statistic, two-sided p-value for test
+#
+def run_t_test_independent(x, y, axis=0, equal_var=True, nan_policy='omit'):
+    statistic, p_value = scipy.stats.ttest_ind(
+        x, y, axis=axis, equal_var=equal_var, nan_policy=nan_policy)
+    return statistic, p_value
+
+
+##
+# Calculate the Wilcoxon signed-rank test
+# \date       2018-03-07 11:32:14+0000
+#
+# \param      x            array_like
+# \param      y            array_like
+# \param      zero_method  string, {"pratt", "wilcox", "zsplit"}
+# \param      correction   bool; apply continuity correction by adjusting the
+#                          Wilcoxon rank statistic
+#
+# \return     statistic, two-sided p-value for test
+#
+def run_wilkoxon_test(x, y=None, zero_method="wilcox", correction=False):
+    statistic, p_value = scipy.stats.wilcoxon(
+        x, y=y, zero_method=zero_method, correction=correction)
+    return statistic, p_value
 
 
 ##
