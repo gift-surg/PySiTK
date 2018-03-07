@@ -358,9 +358,7 @@ def show_nifti(path_to_filename, viewer=VIEWER, segmentation=None):
 def show_niftis(paths_to_filenames, viewer=VIEWER, segmentation=None):
     cmd = globals()["get_function_call_" + viewer](
         paths_to_filenames, segmentation)
-    execute_command(cmd)
-
-    return cmd
+    return execute_command(cmd)
 
 
 ##
@@ -1258,6 +1256,20 @@ def execute_command(cmd,
     if verbose:
         print_execution(cmd)
 
+    # Does not seem to work the way I want it:
+    # This configuration only prints errors (and excludes warnings) - wohoo!
+    # but does wait for ITK-SNAP to be closed again. Using stderr=devnull
+    # does not wait anymore but also does not print any potential error message
+    # anymore.
+    # 
+    # with open(os.devnull, "wb") as devnull:
+    #     process = subprocess.Popen(
+    #         [cmd], shell=True, stdout=devnull, stderr=subprocess.PIPE)
+    #     stdoutdata, stderrdata = process.communicate()
+    #     flag = process.returncode
+    #     if flag != 0:
+    #         print stderrdata
+    #     return flag
     return os.system(cmd)
 
 
