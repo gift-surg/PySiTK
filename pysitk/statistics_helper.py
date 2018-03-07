@@ -182,7 +182,7 @@ def show_boxplot(data_dic, x_label, labels, ref="cls"):
 # \param      x           array_like
 # \param      y           array_like, same shape as x
 # \param      axis        int, axis along which to compute test
-# \param      nan_policy  {'propagate’, 'raise’, 'omit'}
+# \param      nan_policy  {'propagate', 'raise', 'omit'}
 #
 # \return     t-statistic, two-tailed p-value
 #
@@ -202,7 +202,7 @@ def run_t_test_related(x, y, axis=0, nan_policy='omit'):
 # \param      equal_var   bool, If True (default), perform a standard
 #                         independent 2 sample test that assumes equal
 #                         population variances
-# \param      nan_policy  {'propagate’, 'raise’, 'omit'}
+# \param      nan_policy  {'propagate', 'raise', 'omit'}
 #
 # \return     t-statistic, two-sided p-value for test
 #

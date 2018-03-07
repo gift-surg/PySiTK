@@ -156,8 +156,9 @@ class DataAnonymizer(object):
         path_to_file = os.path.join(directory, "%s.p" % filename)
         # Write backup file (human readable)
         if filename_backup is None:
-            path_to_file_backup = os.path.join(directory, "%s_backup_human_readable.txt" % filename)
-        
+            path_to_file_backup = os.path.join(
+                directory, "%s_backup_human_readable.txt" % filename)
+
         # Save randomized dictionary
         f = open(path_to_file, 'wb')
         cPickle.dump(self._dictionary, f, protocol=cPickle.HIGHEST_PROTOCOL)
@@ -180,7 +181,8 @@ class DataAnonymizer(object):
             if verbose:
                 print("\t%s : %s" % (keys[i], self._dictionary[keys[i]]))
 
-        ph.print_info("Anonymization dictionary written to '%s'" % path_to_file)
+        ph.print_info("Anonymization dictionary written to '%s'" %
+                      path_to_file)
 
     ##
     # Reads a dictionary.
@@ -219,7 +221,6 @@ class DataAnonymizer(object):
 
     def anonymize_files(self, dir_input, dir_output, filename_extension=".nii.gz"):
 
-        
         for i in range(0, len(self._filenames)):
             filename_original = self._dictionary[
                 self._identifiers[i]] + filename_extension
@@ -245,12 +246,17 @@ class DataAnonymizer(object):
     # \param      directory           The directory
     # \param      filename_extension  The filename extension
     #
+    # \return     revealed filenames as list of strings
+    #
     def reveal_anonymized_files(self, directory, filename_extension=".nii.gz"):
 
+        filenames_revealed = []
         for i in range(0, len(self._filenames)):
             filename_anonymized = self._identifiers[i] + filename_extension
             filename_revealed = self._identifiers[i] + "_" + \
                 self._dictionary[self._identifiers[i]] + filename_extension
+            filename_revealed = re.sub("_masked_srr", "", filename_revealed)
+
             path_to_file_anon = os.path.join(directory, filename_anonymized)
             path_to_file_reve = os.path.join(directory, filename_revealed)
 
@@ -263,6 +269,9 @@ class DataAnonymizer(object):
                 cmd += path_to_file_reve + " "
                 # print(cmd)
                 ph.execute_command(cmd)
+
+            filenames_revealed.append(filename_revealed)
+        return filenames_revealed
 
     ##
     # Reveals the original filenames, assuming that 'reveal_anonymized_files'
