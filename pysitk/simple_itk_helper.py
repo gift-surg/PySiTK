@@ -29,6 +29,24 @@ from pysitk.definitions import VIEWER
 os.environ['SITK_SHOW_COMMAND'] = ITKSNAP_EXE
 
 
+TRANSFORM_SITK_DOF_LABELS_LONG = {
+    6: ["angle_x [rad]",
+        "angle_y [rad]",
+        "angle_z [rad]",
+        "t_x [mm]",
+        "t_y [mm]",
+        "t_z [mm]"],
+}
+TRANSFORM_SITK_DOF_LABELS_SHORT = {
+    6: ["angle_x",
+        "angle_y",
+        "angle_z",
+        "t_x",
+        "t_y",
+        "t_z"],
+}
+
+
 ##
 # Get composite transform of two affine/euler sitk transforms
 # \see        http://insightsoftwareconsortium.github.io/SimpleITK-Notebooks/Python_html/22_Transforms.html
@@ -195,6 +213,22 @@ def get_sitk_affine_transform_from_sitk_image(image_sitk):
 
     # T(i) = R*S*i + origin
     return sitk.AffineTransform(A, t)
+
+
+##
+# Copy sitk-type transform and return same type
+# \date       2018-04-18 22:51:51-0600
+#
+# \param      transform_sitk  Transform as sitk.Transform
+#
+# \return     Same-type copy of an sitk.Transform
+#
+def copy_transform_sitk(transform_sitk):
+
+    name = transform_sitk.GetName()
+    transform_sitk_copy = eval("sitk.%s" % name)(transform_sitk)
+
+    return transform_sitk_copy
 
 
 ##
@@ -675,7 +709,7 @@ def write_nifti_image_sitk(image_sitk, path_to_file, verbose=False):
 
 ##
 # Reads a nifti image and returns sitk.Image object.
-# 
+#
 # Potential nan and inf values are replaced by numerical values
 # Remark: Not tested for vector images
 # \date       2018-02-09 00:21:59+0000
