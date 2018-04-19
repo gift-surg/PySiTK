@@ -696,8 +696,11 @@ def write_nifti_image_sitk(image_sitk, path_to_file, verbose=False):
     # it would set dim0 = 2 incorrectly. Using fslmodhd for such a case seems
     # to do the trick as it updates the s-form as well.
     if image_sitk.GetDimension() == 3 and image_sitk.GetSize()[-1] == 1:
-        flag = ph.execute_command(
-            "fslmodhd %s dim0 3" % path_to_file, verbose=verbose)
+        # Do not apply header update to single slice; causes troubles for
+        # some FSL versions (e.g. 5.0.9)
+        flag = 0
+        # flag = ph.execute_command(
+        #     "fslmodhd %s dim0 3" % path_to_file, verbose=verbose)
     else:
         flag = ph.execute_command(
             "fslorient -copyqform2sform %s" % path_to_file, verbose=verbose)
