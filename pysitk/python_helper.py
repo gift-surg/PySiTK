@@ -194,6 +194,9 @@ def read_variables(directory, filename, filetype=".pckl"):
 # \return     file open handle
 #
 def safe_open(path, access_mode='w'):
+    if not isinstance(path, str):
+        raise IOError("Given path must be of type string")
+
     mkdir_p(os.path.dirname(path))
     return open(path, access_mode)
 
@@ -487,6 +490,8 @@ def get_function_call_fslview(filenames, filename_segmentation=None):
 #
 # \return     string to be executed.
 #
+
+
 def get_function_call_niftyview(filenames, filename_segmentation=None):
 
     cmd = NIFTYVIEW_EXE + " \\\n"
@@ -1261,7 +1266,7 @@ def execute_command(cmd,
     # but does wait for ITK-SNAP to be closed again. Using stderr=devnull
     # does not wait anymore but also does not print any potential error message
     # anymore.
-    # 
+    #
     # with open(os.devnull, "wb") as devnull:
     #     process = subprocess.Popen(
     #         [cmd], shell=True, stdout=devnull, stderr=subprocess.PIPE)
@@ -1579,6 +1584,10 @@ def write_array_to_file(
     access_mode="a",
     verbose=True
 ):
+
+    if not isinstance(array, np.ndarray):
+        raise IOError("Given array must be of type np.ndarray")
+
     file_handle = safe_open(path_to_file, access_mode)
     np.savetxt(file_handle, array, fmt=format, delimiter=delimiter)
     file_handle.close()
