@@ -1329,6 +1329,21 @@ def clear_directory(directory, verbose=True):
 
 
 ##
+# Strip filename extension from path
+# \date       2018-04-23 16:12:41-0600
+#
+# \param      path_to_file  path to file, string
+#
+# \return     Return full path to file without filename extension
+#
+def strip_filename_extension(path_to_file):
+    directory = os.path.dirname(path_to_file)
+    basename = os.path.basename(path_to_file)
+    basename_no_ext = basename.split(".")[0]
+    return os.path.join(directory, basename_no_ext)
+
+
+##
 # Delete directory
 # \date       2017-08-08 16:37:03+0100
 #
