@@ -1621,5 +1621,16 @@ def write_array_to_file(
 #
 def append_to_filename(filename, suffix):
     splits = filename.split(".")
+
+    # Check for known extension
+    # Rationale: if a decimal point is in the filename, the simple search for a
+    # separating point causes problems
+    for known_extension in ["nii", "mhd"]:
+        if known_extension in splits:
+            index = splits.index(known_extension) - 1
+            splits[index] += suffix
+            return ".".join(splits)
+
+    # If no known extension, just append before first found decimal point
     splits[0] += suffix
     return ".".join(splits)
