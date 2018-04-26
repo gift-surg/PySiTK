@@ -182,11 +182,13 @@ def read_variables(directory, filename, filetype=".pckl"):
 
     return variables
 
+
 def replace_string_for_print(string):
     string = re.sub(" ", "_", string)
     string = re.sub(":", "", string)
     string = re.sub("/", "_", string)
     return string
+
 
 ##
 # Open "path" for writing, creating any parent directories if needed
@@ -483,6 +485,7 @@ def get_function_call_fslview(filenames, filename_segmentation=None):
 
     return cmd
 
+
 ##
 # Gets the function call for NiftyView.
 # \date       2017-06-28 17:55:35+0100
@@ -493,8 +496,6 @@ def get_function_call_fslview(filenames, filename_segmentation=None):
 #
 # \return     string to be executed.
 #
-
-
 def get_function_call_niftyview(filenames, filename_segmentation=None):
 
     cmd = NIFTYVIEW_EXE + " \\\n"
@@ -782,6 +783,7 @@ def show_images(images, titles=None, cmap="Greys_r", use_colorbar=False, fontfam
 
     return fig
 
+
 ##
 # Shows single 2D/3D array or a list of 2D arrays.
 # \date       2017-02-07 10:06:25+0000
@@ -802,8 +804,6 @@ def show_images(images, titles=None, cmap="Greys_r", use_colorbar=False, fontfam
 # \param      fontsize          The fontsize
 # \param      fontname          "Arial", "Times New Roman" etc
 #
-
-
 def show_arrays(nda,
                 title=None,
                 cmap="Greys_r",
@@ -1364,6 +1364,7 @@ def delete_file(path_to_file, verbose=True):
     if verbose:
         print_info("File '%s' deleted." % path_to_file)
 
+
 ##
 # Gets the current date in format year, month and day
 # \date       2017-08-08 16:34:17+0100
@@ -1372,8 +1373,6 @@ def delete_file(path_to_file, verbose=True):
 #
 # \return     The current date as string
 #
-
-
 def get_current_date(separator=""):
     now = datetime.datetime.now()
     date = "%s%s%s%s%s" % (
