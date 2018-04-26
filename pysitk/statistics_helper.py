@@ -39,6 +39,20 @@ def print_table_from_array(nda, nda_std=None, rows=None, cols=None):
     print(df)
 
 
+def print_table_from_data_dic(data_dic, x_label, labels):
+    x_label_entries = len(data_dic.keys())
+    x_label_entry_data = len(data_dic[data_dic.keys()[0]])
+    nda = np.zeros((x_label_entries, x_label_entry_data))
+    nda_std = np.zeros_like(nda)
+
+    for (i, key), j in itertools.product(
+            enumerate(data_dic.keys()), range(x_label_entry_data)):
+        nda[i, j] = np.nanmean(data_dic[key][j])
+        nda_std[i, j] = np.nanstd(data_dic[key][j])
+    rows = ["%s %s" % (x_label, str(key)) for key in data_dic.keys()]
+    print_table_from_array(nda=nda, nda_std=nda_std, rows=rows, cols=labels)
+
+
 def write_array_to_latex(
         path_to_file,
         nda,

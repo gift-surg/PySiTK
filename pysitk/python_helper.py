@@ -9,6 +9,7 @@
 
 # Import libraries
 import os
+import re
 import sys
 import pickle
 import subprocess
@@ -16,7 +17,6 @@ import numpy as np
 import contextlib
 import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 import matplotlib.cm
 import time
 import errno
@@ -24,8 +24,6 @@ import datetime
 from PIL import Image
 import itertools
 import shutil
-import pandas as pd
-import seaborn as sns
 
 from pysitk.definitions import DIR_TMP
 from pysitk.definitions import ITKSNAP_EXE, FSLVIEW_EXE, NIFTYVIEW_EXE
@@ -184,6 +182,11 @@ def read_variables(directory, filename, filetype=".pckl"):
 
     return variables
 
+def replace_string_for_print(string):
+    string = re.sub(" ", "_", string)
+    string = re.sub(":", "", string)
+    string = re.sub("/", "_", string)
+    return string
 
 ##
 # Open "path" for writing, creating any parent directories if needed
