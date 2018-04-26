@@ -231,6 +231,33 @@ def copy_transform_sitk(transform_sitk):
     return transform_sitk_copy
 
 
+def read_transform_sitk(path_to_file, inverse=False):
+    transform_types = {
+        "Euler3DTransform_double_3_3": sitk.Euler3DTransform,
+        "AffineTransform_double_3_3": sitk.AffineTransform,
+    }
+
+    # read as sitk.Transform
+    transform_sitk = sitk.ReadTransform(path_to_file)
+
+    # convert to correct type of transform, e.g. Euler3DTransform
+    transform_type = ph.read_file_line_by_line(path_to_file)[2]
+    transform_type = re.sub("\n", "", transform_type)
+    transform_type = transform_type.split(" ")[1]
+    transform_sitk = transform_types[transform_type](transform_sitk)
+
+    # invert transform
+    if inverse:
+        transform_sitk = transform_types[transform_type](
+            transform_sitk.GetInverse())
+
+    return transform_sitk
+
+
+def invert_transform_sitk(transform_sitk):
+    return getattr(sitk, transform_sitk.GetName())(transform_sitk.GetInverse())
+
+
 ##
 # Gets the sitk affine matrix from sitk image.
 # \date       2016-11-06 19:07:03+0000
@@ -685,12 +712,12 @@ def write_itk_image(image_itk, filename):
 # \param      image_sitk    Image as sitk.Image object
 # \param      path_to_file  path to filename
 #
-def write_nifti_image_sitk(image_sitk, path_to_file, verbose=False):
+def write_nifti_image_sitk(image_sitk, path_to_file, verbose=0, debug=0):
 
     ph.create_directory(os.path.dirname(path_to_file))
-    sitk.WriteImage(image_sitk, path_to_file)
     if verbose:
-        ph.print_info("Image written to %s." % path_to_file)
+        ph.print_info("Image written to '%s' ... " % path_to_file, newline=0)
+    sitk.WriteImage(image_sitk, path_to_file)
 
     # Use fslorient to copy q-form to s-form. However, in case of a 3D slice,
     # it would set dim0 = 2 incorrectly. Using fslmodhd for such a case seems
@@ -700,15 +727,17 @@ def write_nifti_image_sitk(image_sitk, path_to_file, verbose=False):
         # some FSL versions (e.g. 5.0.9)
         flag = 0
         # flag = ph.execute_command(
-        #     "fslmodhd %s dim0 3" % path_to_file, verbose=verbose)
+        #     "fslmodhd %s dim0 3" % path_to_file, verbose=debug)
     else:
         flag = ph.execute_command(
-            "fslorient -copyqform2sform %s" % path_to_file, verbose=verbose)
+            "fslorient -copyqform2sform %s" % path_to_file, verbose=debug)
 
     if flag != 0:
         ph.print_warning(
             "Only q-form is set as fslorient was not successful!")
 
+    if verbose:
+        print("done")
 
 ##
 # Reads a nifti image and returns sitk.Image object.
@@ -723,6 +752,8 @@ def write_nifti_image_sitk(image_sitk, path_to_file, verbose=False):
 #
 # \return     Nifti image as sitk.Object
 #
+
+
 def read_nifti_image_sitk(
         file_path,
         pixel_type=sitk.sitkUnknown,
