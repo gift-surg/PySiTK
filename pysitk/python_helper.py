@@ -1332,21 +1332,6 @@ def clear_directory(directory, verbose=True):
 
 
 ##
-# Strip filename extension from path
-# \date       2018-04-23 16:12:41-0600
-#
-# \param      path_to_file  path to file, string
-#
-# \return     Return full path to file without filename extension
-#
-def strip_filename_extension(path_to_file):
-    directory = os.path.dirname(path_to_file)
-    basename = os.path.basename(path_to_file)
-    basename_no_ext = basename.split(".")[0]
-    return os.path.join(directory, basename_no_ext)
-
-
-##
 # Delete directory
 # \date       2017-08-08 16:37:03+0100
 #
@@ -1611,6 +1596,41 @@ def write_array_to_file(
     if verbose:
         print_info("Array written to '%s'" % (path_to_file))
 
+##
+# Strip filename extension from path
+# \date       2018-04-23 16:12:41-0600
+#
+# \param      path_to_file  path to file, string
+#
+# \return     Return full path to file without filename extension
+#
+
+
+def strip_filename_extension(path_to_file):
+    directory = os.path.dirname(path_to_file)
+    basename = os.path.basename(path_to_file)
+
+    splits = basename.split(".")
+    index = len(splits)
+
+    # Check for known extension
+    # Rationale: if a decimal point is in the filename, the simple search for a
+    # separating point causes problems
+    for known_extension in ["nii", "mhd", "txt"]:
+        if known_extension in splits:
+            index = splits.index(known_extension)
+            continue
+
+    basename_no_ext = ".".join(splits[0:index])
+    extension = ".".join(splits[index:])
+
+    return os.path.join(directory, basename_no_ext), extension
+
+
+def replace_filename_extension(path_to_file, extension):
+    filename_no_ext = strip_filename_extension(path_to_file)[0]
+    return ".".join([filename_no_ext, extension])
+
 
 ##
 # Inserts a suffix between filename and its extension
@@ -1622,17 +1642,8 @@ def write_array_to_file(
 # \return appended filename as string
 #
 def append_to_filename(filename, suffix):
-    splits = filename.split(".")
 
-    # Check for known extension
-    # Rationale: if a decimal point is in the filename, the simple search for a
-    # separating point causes problems
-    for known_extension in ["nii", "mhd"]:
-        if known_extension in splits:
-            index = splits.index(known_extension) - 1
-            splits[index] += suffix
-            return ".".join(splits)
+    filename_no_ext, ext = strip_filename_extension(filename)
+    filename_no_ext += suffix
 
-    # If no known extension, just append before first found decimal point
-    splits[0] += suffix
-    return ".".join(splits)
+    return ".".join([filename_no_ext, ext])
