@@ -1596,6 +1596,7 @@ def write_array_to_file(
     if verbose:
         print_info("Array written to '%s'" % (path_to_file))
 
+
 ##
 # Strip filename extension from path
 # \date       2018-04-23 16:12:41-0600
@@ -1604,8 +1605,6 @@ def write_array_to_file(
 #
 # \return     Return full path to file without filename extension
 #
-
-
 def strip_filename_extension(path_to_file):
     directory = os.path.dirname(path_to_file)
     basename = os.path.basename(path_to_file)
