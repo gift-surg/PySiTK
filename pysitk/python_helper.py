@@ -25,6 +25,8 @@ from PIL import Image
 import itertools
 import shutil
 
+from six.moves import input
+
 from pysitk.definitions import DIR_TMP
 from pysitk.definitions import ITKSNAP_EXE, FSLVIEW_EXE, NIFTYVIEW_EXE
 from pysitk.definitions import VIEWER
@@ -272,7 +274,7 @@ def write_performed_script_execution_to_executable_file(function_call, filename)
 # \date       2016-11-06 15:41:43+0000
 #
 def pause():
-    programPause = raw_input("Press the <ENTER> key to continue ...")
+    programPause = input("Press the <ENTER> key to continue ...")
 
 
 ##
@@ -523,10 +525,10 @@ def get_function_call_niftyview(filenames, filename_segmentation=None):
 #
 def read_input(infotext, default=None):
     if default is None:
-        text_in = raw_input(infotext + ": ")
+        text_in = input(infotext + ": ")
         return text_in
     else:
-        text_in = raw_input(infotext + " [" + str(default) + "]: ")
+        text_in = input(infotext + " [" + str(default) + "]: ")
 
         if text_in in [""]:
             return default
@@ -1295,7 +1297,7 @@ def create_directory(directory, delete_files=False, verbose=False):
     #     directory += "/"
 
     # Create directory in case it does not exist already
-    if not os.path.isdir(directory):
+    if not os.path.isdir(directory) and directory is not "":
         os.makedirs(directory)
         if verbose:
             print_info("Directory " + directory + " created.")
