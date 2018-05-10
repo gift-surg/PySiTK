@@ -1532,13 +1532,15 @@ def write_file_line_by_line(path_to_file, lines, access_mode="w"):
 #
 # \param      filename  The filename including filename extension
 #
-def write_image(nda, filename, verbose=True):
+def write_image(nda, path_to_file, verbose=True, access_mode="w"):
     # Convert to integer image between 0 and 255
-    nda = np.round(np.array(nda)).astype(np.uint8)
+    # nda = np.round(np.array(nda)).astype(np.uint8)
     im = Image.fromarray(nda)
-    im.save(filename)
+
+    file_handle = safe_open(path_to_file, access_mode)
+    im.save(file_handle)
     if verbose:
-        print_info("Data array written to %s." % (filename))
+        print_info("Data array written to '%s'." % (path_to_file))
 
 
 ##
@@ -1612,7 +1614,7 @@ def strip_filename_extension(path_to_file):
     basename = os.path.basename(path_to_file)
 
     splits = basename.split(".")
-    index = len(splits)
+    index = len(splits) - 1
 
     # Check for known extension
     # Rationale: if a decimal point is in the filename, the simple search for a
