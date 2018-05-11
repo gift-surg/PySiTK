@@ -1494,11 +1494,14 @@ def create_image_pyramid(length, slope=1, value_bg=0, value_fg=500, offset=(0, 0
 #
 # \param      filename  The filename including filename extension. E.g. 'png',
 #                       'jpg'
+# \param      mode      The mode of image defining type and depth of a pixel;
+#                       see
+#                       https://pillow.readthedocs.io/en/3.1.x/handbook/concepts.html#concept-modes
 #
 # \return     Image data as numpy array
 #
-def read_image(filename):
-    return np.asarray(Image.open(filename))
+def read_image(filename, mode="L"):
+    return np.asarray(Image.open(filename).convert(mode))
 
 
 def read_file_line_by_line(path_to_file):
