@@ -21,7 +21,7 @@ import matplotlib.cm
 import time
 import errno
 import datetime
-from PIL import Image
+import skimage.io
 import itertools
 import shutil
 
@@ -1494,14 +1494,11 @@ def create_image_pyramid(length, slope=1, value_bg=0, value_fg=500, offset=(0, 0
 #
 # \param      filename  The filename including filename extension. E.g. 'png',
 #                       'jpg'
-# \param      mode      The mode of image defining type and depth of a pixel;
-#                       see
-#                       https://pillow.readthedocs.io/en/3.1.x/handbook/concepts.html#concept-modes
 #
 # \return     Image data as numpy array
 #
-def read_image(filename, mode="L"):
-    return np.asarray(Image.open(filename).convert(mode))
+def read_image(filename):
+    return skimage.io.imread(filename)
 
 
 def read_file_line_by_line(path_to_file):
@@ -1538,12 +1535,15 @@ def write_file_line_by_line(path_to_file, lines, access_mode="w"):
 def write_image(nda, path_to_file, verbose=True, access_mode="w"):
     # Convert to integer image between 0 and 255
     # nda = np.round(np.array(nda)).astype(np.uint8)
-    im = Image.fromarray(nda)
 
-    file_handle = safe_open(path_to_file, access_mode)
-    im.save(file_handle)
+    create_directory(os.path.dirname(path_to_file))
+    skimage.io.imsave(path_to_file, nda)
+
     if verbose:
         print_info("Data array written to '%s'." % (path_to_file))
+
+
+
 
 
 ##
