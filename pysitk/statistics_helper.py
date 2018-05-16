@@ -61,17 +61,19 @@ def write_array_to_latex(
         cols=None,
         row_title=None,
         decimal_places=2,
-        verbose=0,
+        verbose=1,
 ):
 
     lines = []
     sep = " & "
+    newline = " \\\\\n"
+    nan_symbol = "---"
 
     # \begin{tabular}{tabular_options}
     tabular_options = 'c' * nda.shape[1]
     if rows is not None:
         tabular_options = 'l' + tabular_options
-    lines.append("\\begin{tabular}{%s}" % tabular_options)
+    lines.append("\\begin{tabular}{%s}\n" % tabular_options)
 
     # Header: column titles of table
     line_args = ["\\bf %s" % c for c in cols]
@@ -80,28 +82,42 @@ def write_array_to_latex(
             line_args.insert(0, "")
         else:
             line_args.insert(0, "\\bf %s" % row_title)
-    lines.append(sep.join(line_args))
-    lines.append("\\hline")
+    lines.append("%s%s" % (sep.join(line_args), newline))
+    lines.append("\\hline\n")
 
     # Entries of the table
     for i_row in range(nda.shape[0]):
         line_args = []
         if nda_std is None:
-            line_args = ["\\num{%.2f}" % f for f in nda[i_row, :]]
+            line_args = [
+                # "\\num{%s}" % (
+                "%s" % (
+                    '{:.{prec}f}'.format(f, prec=decimal_places)
+                ) if not np.isnan(f)
+                else nan_symbol
+                for f in nda[i_row, :]
+            ]
         else:
-            line_args = ["\\num{%.2f \\pm %.2f}" % (m, s)
-                         for (m, s) in zip(nda[i_row, :], nda_std[i_row, :])]
+            line_args = [
+                # "\\num{%s \\pm %s}" % (
+                "%s $\\pm$ %s" % (
+                    '{:.{prec}f}'.format(m, prec=decimal_places),
+                    '{:.{prec}f}'.format(s, prec=decimal_places)
+                ) if not np.isnan(m)
+                else nan_symbol
+                for (m, s) in zip(nda[i_row, :], nda_std[i_row, :])
+            ]
         if rows is not None:
             line_args.insert(0, "\\bf %s" % rows[i_row])
-        lines.append(sep.join(line_args))
+        lines.append("%s%s" % (sep.join(line_args), newline))
 
     # \end{tabular}
     lines.append("\\end{tabular}")
 
-    text = " \\\\\n".join(lines)
-    ph.write_to_file(path_to_file, text, access_mode="w", verbose=True)
+    text = "".join(lines)
     if verbose:
         print(text)
+    ph.write_to_file(path_to_file, text, access_mode="w", verbose=True)
 
 
 ##
