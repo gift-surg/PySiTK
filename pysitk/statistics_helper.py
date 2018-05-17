@@ -150,7 +150,16 @@ def make_figure_fullscreen():
 #
 # \return     handle to sns.boxplot
 #
-def show_boxplot(data_dic, x_label, labels, ref="cls"):
+def show_boxplot(data_dic,
+                 x_label,
+                 labels,
+                 ref="cls",
+                 palette=None,
+                 # palette="husl"
+                 # palette="hls"
+                 # palette="Set1"
+                 show_points=True,
+                 ):
 
     # Get maximum array length over all groups and labels
     # Rationale: Create joint-maximum array where NaN's are used for padding
@@ -191,15 +200,37 @@ def show_boxplot(data_dic, x_label, labels, ref="cls"):
         var_name=x_label,
     )
 
+    sns.set(style="ticks")
+    # sns.set_style("whitegrid")
     b = sns.boxplot(
-        data=df_melt,
-        hue=ref,  # different colors for different ref
         x=x_label,
         y="value",  # only y="value" works!?!
+        data=df_melt,
+        hue=ref,  # different colors for different ref
+        width=0.5,
         # y=y_label,
-        # palette="Set1",
-        order=sorted(data_dic.keys()),
+        palette=palette,
+        order=data_dic.keys(),
     )
+    if show_points:
+        sns.stripplot(
+            x=x_label,
+            y="value",
+            data=df_melt,
+            hue=ref,
+            size=7,
+            edgecolor="black",
+            linewidth=1,
+            palette=palette,
+            split=True,
+        )
+        b_handles, b_labels = b.get_legend_handles_labels()
+        n_labels = len(data_dic.keys())
+        l = plt.legend(b_handles[0:len(labels)], b_labels[0:len(labels)])
+
+    sns.despine(offset=10, trim=True)
+
+
     # sns.set_style("whitegrid")
 
     return b
