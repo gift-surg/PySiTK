@@ -21,7 +21,7 @@ import matplotlib.cm
 import time
 import errno
 import datetime
-from PIL import Image
+import skimage.io
 import itertools
 import shutil
 
@@ -1498,7 +1498,7 @@ def create_image_pyramid(length, slope=1, value_bg=0, value_fg=500, offset=(0, 0
 # \return     Image data as numpy array
 #
 def read_image(filename):
-    return np.asarray(Image.open(filename))
+    return skimage.io.imread(filename)
 
 
 def read_file_line_by_line(path_to_file):
@@ -1532,13 +1532,18 @@ def write_file_line_by_line(path_to_file, lines, access_mode="w"):
 #
 # \param      filename  The filename including filename extension
 #
-def write_image(nda, filename, verbose=True):
+def write_image(nda, path_to_file, verbose=True, access_mode="w"):
     # Convert to integer image between 0 and 255
-    nda = np.round(np.array(nda)).astype(np.uint8)
-    im = Image.fromarray(nda)
-    im.save(filename)
+    # nda = np.round(np.array(nda)).astype(np.uint8)
+
+    create_directory(os.path.dirname(path_to_file))
+    skimage.io.imsave(path_to_file, nda)
+
     if verbose:
-        print_info("Data array written to %s." % (filename))
+        print_info("Data array written to '%s'." % (path_to_file))
+
+
+
 
 
 ##
@@ -1612,7 +1617,7 @@ def strip_filename_extension(path_to_file):
     basename = os.path.basename(path_to_file)
 
     splits = basename.split(".")
-    index = len(splits)
+    index = len(splits) - 1
 
     # Check for known extension
     # Rationale: if a decimal point is in the filename, the simple search for a
