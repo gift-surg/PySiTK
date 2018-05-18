@@ -159,6 +159,7 @@ def show_boxplot(data_dic,
                  # palette="hls"
                  # palette="Set1"
                  show_points=True,
+                 show_legend=False,
                  ):
 
     # Get maximum array length over all groups and labels
@@ -228,6 +229,8 @@ def show_boxplot(data_dic,
         n_labels = len(data_dic.keys())
         l = plt.legend(b_handles[0:len(labels)], b_labels[0:len(labels)])
 
+    if not show_legend:
+        l = plt.legend([])
     sns.despine(offset=10, trim=True)
 
 
