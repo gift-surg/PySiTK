@@ -233,7 +233,9 @@ def copy_transform_sitk(transform_sitk):
 
 def read_transform_sitk(path_to_file, inverse=False):
     transform_types = {
+        "Euler2DTransform_double_2_2": sitk.Euler2DTransform,
         "Euler3DTransform_double_3_3": sitk.Euler3DTransform,
+        "AffineTransform_double_2_2": sitk.AffineTransform,
         "AffineTransform_double_3_3": sitk.AffineTransform,
     }
 
