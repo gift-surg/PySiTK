@@ -237,6 +237,12 @@ def read_transform_sitk(path_to_file, inverse=False):
         "Euler3DTransform_double_3_3": sitk.Euler3DTransform,
         "AffineTransform_double_2_2": sitk.AffineTransform,
         "AffineTransform_double_3_3": sitk.AffineTransform,
+        "MatrixOffsetTransformBase_double_3_3": sitk.AffineTransform,
+    }
+
+    # Used for to/from FLIRT transform conversion
+    transform_types_dim = {
+        "MatrixOffsetTransformBase_double_3_3": 3,
     }
 
     # read as sitk.Transform
@@ -246,7 +252,14 @@ def read_transform_sitk(path_to_file, inverse=False):
     transform_type = ph.read_file_line_by_line(path_to_file)[2]
     transform_type = re.sub("\n", "", transform_type)
     transform_type = transform_type.split(" ")[1]
-    transform_sitk = transform_types[transform_type](transform_sitk)
+    if transform_type in ["MatrixOffsetTransformBase_double_3_3"]:
+        transform_sitk_ = sitk.AffineTransform(
+            transform_types_dim[transform_type])
+        transform_sitk_.SetParameters(transform_sitk.GetParameters())
+        transform_sitk_.SetFixedParameters(transform_sitk.GetFixedParameters())
+        transform_sitk = transform_sitk_
+    else:
+        transform_sitk = transform_types[transform_type](transform_sitk)
 
     # invert transform
     if inverse:
