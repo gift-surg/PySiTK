@@ -5,7 +5,11 @@ import seaborn as sns
 import itertools
 import matplotlib.pyplot as plt
 
+import scipy.stats
 import pysitk.python_helper as ph
+
+# Increase with so that there is no linebreak for wider tables
+pd.set_option('display.width', 1000)
 
 
 ##
@@ -24,13 +28,29 @@ def print_table_from_array(nda, nda_std=None, rows=None, cols=None):
         nda_print = nda
     else:
         nda_print = np.zeros((nda.shape[0], 2 * nda.shape[1]))
+        if cols is None:
+            cols = [""] * nda.shape[1]
         cols = ["%s (%s)" % (m, t)
                 for (m, t) in itertools.product(cols, ["mean", "std"])]
 
         nda_print[:, 0::2] = nda
         nda_print[:, 1::2] = nda_std
-    df = pd.DataFrame(nda_print, rows, cols)
+    df = pd.DataFrame(nda_print, index=rows, columns=cols)
     print(df)
+
+
+def print_table_from_data_dic(data_dic, x_label, labels):
+    x_label_entries = len(data_dic.keys())
+    x_label_entry_data = len(data_dic[data_dic.keys()[0]])
+    nda = np.zeros((x_label_entries, x_label_entry_data))
+    nda_std = np.zeros_like(nda)
+
+    for (i, key), j in itertools.product(
+            enumerate(data_dic.keys()), range(x_label_entry_data)):
+        nda[i, j] = np.nanmean(data_dic[key][j])
+        nda_std[i, j] = np.nanstd(data_dic[key][j])
+    rows = ["%s %s" % (x_label, str(key)) for key in data_dic.keys()]
+    print_table_from_array(nda=nda, nda_std=nda_std, rows=rows, cols=labels)
 
 
 def write_array_to_latex(
@@ -41,16 +61,19 @@ def write_array_to_latex(
         cols=None,
         row_title=None,
         decimal_places=2,
+        verbose=1,
 ):
 
     lines = []
     sep = " & "
+    newline = " \\\\\n"
+    nan_symbol = "---"
 
     # \begin{tabular}{tabular_options}
     tabular_options = 'c' * nda.shape[1]
     if rows is not None:
         tabular_options = 'l' + tabular_options
-    lines.append("\\begin{tabular}{%s}" % tabular_options)
+    lines.append("\\begin{tabular}{%s}\n" % tabular_options)
 
     # Header: column titles of table
     line_args = ["\\bf %s" % c for c in cols]
@@ -59,26 +82,41 @@ def write_array_to_latex(
             line_args.insert(0, "")
         else:
             line_args.insert(0, "\\bf %s" % row_title)
-    lines.append(sep.join(line_args))
-    lines.append("\\hline")
+    lines.append("%s%s" % (sep.join(line_args), newline))
+    lines.append("\\hline\n")
 
     # Entries of the table
     for i_row in range(nda.shape[0]):
         line_args = []
         if nda_std is None:
-            line_args = ["\\num{%.2f}" % f for f in nda[i_row, :]]
+            line_args = [
+                # "\\num{%s}" % (
+                "%s" % (
+                    '{:.{prec}f}'.format(f, prec=decimal_places)
+                ) if not np.isnan(f)
+                else nan_symbol
+                for f in nda[i_row, :]
+            ]
         else:
-            line_args = ["\\num{%.2f \\pm %.2f}" % (m, s)
-                         for (m, s) in zip(nda[i_row, :], nda_std[i_row, :])]
+            line_args = [
+                # "\\num{%s \\pm %s}" % (
+                "%s $\\pm$ %s" % (
+                    '{:.{prec}f}'.format(m, prec=decimal_places),
+                    '{:.{prec}f}'.format(s, prec=decimal_places)
+                ) if not np.isnan(m)
+                else nan_symbol
+                for (m, s) in zip(nda[i_row, :], nda_std[i_row, :])
+            ]
         if rows is not None:
             line_args.insert(0, "\\bf %s" % rows[i_row])
-        lines.append(sep.join(line_args))
+        lines.append("%s%s" % (sep.join(line_args), newline))
 
     # \end{tabular}
     lines.append("\\end{tabular}")
 
-    text = " \\\\\n".join(lines)
-    print text
+    text = "".join(lines)
+    if verbose:
+        print(text)
     ph.write_to_file(path_to_file, text, access_mode="w", verbose=True)
 
 
@@ -112,7 +150,17 @@ def make_figure_fullscreen():
 #
 # \return     handle to sns.boxplot
 #
-def show_boxplot(data_dic, x_label, labels, ref="cls"):
+def show_boxplot(data_dic,
+                 x_label,
+                 labels,
+                 ref="cls",
+                 palette=None,
+                 # palette="husl"
+                 # palette="hls"
+                 # palette="Set1"
+                 show_points=True,
+                 show_legend=False,
+                 ):
 
     # Get maximum array length over all groups and labels
     # Rationale: Create joint-maximum array where NaN's are used for padding
@@ -153,18 +201,97 @@ def show_boxplot(data_dic, x_label, labels, ref="cls"):
         var_name=x_label,
     )
 
+    sns.set(style="ticks")
+    # sns.set_style("whitegrid")
     b = sns.boxplot(
-        data=df_melt,
-        hue=ref,  # different colors for different ref
         x=x_label,
         y="value",  # only y="value" works!?!
+        data=df_melt,
+        hue=ref,  # different colors for different ref
+        width=0.5,
         # y=y_label,
-        # palette="Set1",
-        order=sorted(data_dic.keys()),
+        palette=palette,
+        order=data_dic.keys(),
     )
+    if show_points:
+        sns.stripplot(
+            x=x_label,
+            y="value",
+            data=df_melt,
+            hue=ref,
+            size=7,
+            edgecolor="black",
+            linewidth=1,
+            palette=palette,
+            split=True,
+        )
+        b_handles, b_labels = b.get_legend_handles_labels()
+        n_labels = len(data_dic.keys())
+        l = plt.legend(b_handles[0:len(labels)], b_labels[0:len(labels)])
+
+    if not show_legend:
+        l = plt.legend([])
+    sns.despine(offset=10, trim=True)
+
+
     # sns.set_style("whitegrid")
 
     return b
+
+
+##
+# Run t-test on two related samples of scores
+# \date       2018-02-26 13:50:09+0000
+#
+# \param      x           array_like
+# \param      y           array_like, same shape as x
+# \param      axis        int, axis along which to compute test
+# \param      nan_policy  {'propagate', 'raise', 'omit'}
+#
+# \return     t-statistic, two-tailed p-value
+#
+def run_t_test_related(x, y, axis=0, nan_policy='omit'):
+    statistic, p_value = scipy.stats.ttest_rel(
+        x, y, axis=axis, nan_policy=nan_policy)
+    return statistic, p_value
+
+
+##
+# Run t-test for the means of two independent samples of scores
+# \date       2018-02-26 13:52:41+0000
+#
+# \param      x           array_like
+# \param      y           array_like
+# \param      axis        int, axis along which to compute test
+# \param      equal_var   bool, If True (default), perform a standard
+#                         independent 2 sample test that assumes equal
+#                         population variances
+# \param      nan_policy  {'propagate', 'raise', 'omit'}
+#
+# \return     t-statistic, two-sided p-value for test
+#
+def run_t_test_independent(x, y, axis=0, equal_var=True, nan_policy='omit'):
+    statistic, p_value = scipy.stats.ttest_ind(
+        x, y, axis=axis, equal_var=equal_var, nan_policy=nan_policy)
+    return statistic, p_value
+
+
+##
+# Calculate the Wilcoxon signed-rank test
+# \date       2018-03-07 11:32:14+0000
+#
+# \param      x            array_like
+# \param      y            array_like
+# \param      zero_method  string, {"pratt", "wilcox", "zsplit"}
+# \param      correction   bool; apply continuity correction by adjusting the
+#                          Wilcoxon rank statistic
+#
+# \return     statistic, two-sided p-value for test
+#
+def run_wilkoxon_test(x, y=None, zero_method="wilcox", correction=False):
+    statistic, p_value = scipy.stats.wilcoxon(
+        x, y=y, zero_method=zero_method, correction=correction)
+    return statistic, p_value
 
 
 ##
@@ -221,24 +348,30 @@ def show_bland_altman_plot(x, y, x_label, y_label):
     color_lines = ph.COLORS_TABLEAU20[2]
     markerfacecolor_points = "white",
 
+    # Plot data
     plt.plot((x + y) / 2., x - y,
              color=color_points,
              marker=marker_points,
              # markerfacecolor=markerfacecolor_points,
              linestyle="")
 
-    mu = np.mean(x - y)
-    sigma = np.std(x - y)
-
     axes = plt.gca()
     xmin, xmax = axes.get_xlim()
 
+    # Plot mean and mean +- 1.96 sigma helper lines
+    mu = np.mean(x - y)
+    sigma = np.std(x - y)
     plt.plot([xmax, xmin], np.ones(2) * mu,
              color=color_lines, linestyle="-")
     plt.plot([xmax, xmin], np.ones(2) * (mu + sigma * 1.96),
              color=color_lines, linestyle="--")
     plt.plot([xmax, xmin], np.ones(2) * (mu - sigma * 1.96),
              color=color_lines, linestyle="--")
+    plt.plot([xmax, xmin], np.ones(2) * mu,
+             color=color_lines, linestyle="-")
+
+    # Plot zero line
+    axes.axhline(y=0, color='k')
 
     plt.xlabel("(%s + %s)/2" % (x_label, y_label))
     plt.ylabel("%s - %s" % (x_label, y_label))

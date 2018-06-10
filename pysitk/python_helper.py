@@ -9,22 +9,23 @@
 
 # Import libraries
 import os
+import re
 import sys
 import pickle
+import subprocess
 import numpy as np
 import contextlib
 import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 import matplotlib.cm
 import time
 import errno
 import datetime
-from PIL import Image
+import skimage.io
 import itertools
 import shutil
-import pandas as pd
-import seaborn as sns
+
+from six.moves import input
 
 from pysitk.definitions import DIR_TMP
 from pysitk.definitions import ITKSNAP_EXE, FSLVIEW_EXE, NIFTYVIEW_EXE
@@ -184,6 +185,13 @@ def read_variables(directory, filename, filetype=".pckl"):
     return variables
 
 
+def replace_string_for_print(string):
+    string = re.sub(" ", "_", string)
+    string = re.sub(":", "", string)
+    string = re.sub("/", "_", string)
+    return string
+
+
 ##
 # Open "path" for writing, creating any parent directories if needed
 # \date       2017-07-12 11:15:47+0100
@@ -193,6 +201,9 @@ def read_variables(directory, filename, filetype=".pckl"):
 # \return     file open handle
 #
 def safe_open(path, access_mode='w'):
+    if not isinstance(path, str):
+        raise IOError("Given path must be of type string")
+
     mkdir_p(os.path.dirname(path))
     return open(path, access_mode)
 
@@ -263,7 +274,7 @@ def write_performed_script_execution_to_executable_file(function_call, filename)
 # \date       2016-11-06 15:41:43+0000
 #
 def pause():
-    programPause = raw_input("Press the <ENTER> key to continue ...")
+    programPause = input("Press the <ENTER> key to continue ...")
 
 
 ##
@@ -274,8 +285,18 @@ def exit():
     sys.exit()
 
 
+##
+# Kill all ITK-SNAP processes
+# \date       2018-02-21 17:36:54+0000
+#
+# \return     { description_of_the_return_value }
+#
 def killall_itksnap():
-    os.system("killall ITK-SNAP")
+    with open(os.devnull, "wb") as devnull:
+        subprocess.call(
+            ["killall", "itksnap"], stdout=devnull, stderr=subprocess.STDOUT)
+        subprocess.call(
+            ["killall", "ITK-SNAP"], stdout=devnull, stderr=subprocess.STDOUT)
 
 
 ##
@@ -332,8 +353,8 @@ def niftyview(path_to_filename):
 # \param      viewer            The viewer; either "fsleyes", "itksnap" or
 #                               "niftyview"
 #
-def show_nifti(path_to_filename, viewer=VIEWER):
-    show_niftis([path_to_filename], viewer=viewer)
+def show_nifti(path_to_filename, viewer=VIEWER, segmentation=None):
+    show_niftis([path_to_filename], viewer=viewer, segmentation=segmentation)
 
 
 ##
@@ -347,9 +368,43 @@ def show_nifti(path_to_filename, viewer=VIEWER):
 def show_niftis(paths_to_filenames, viewer=VIEWER, segmentation=None):
     cmd = globals()["get_function_call_" + viewer](
         paths_to_filenames, segmentation)
-    execute_command(cmd)
+    return execute_command(cmd)
 
-    return cmd
+
+##
+# Writes a executable to show niftis.
+# \date       2018-02-21 17:22:23+0000
+#
+# \param      paths_to_filenames  The paths to filenames
+# \param      dir_output          The dir output
+# \param      output_filename     The output filename
+# \param      viewer              The viewer
+# \param      segmentation        The segmentation
+#
+def write_show_niftis_exe(
+        paths_to_filenames,
+        dir_output,
+        output_filename="showComparison.sh",
+        viewer=VIEWER,
+        segmentation=None):
+    cmd_args = ["#!/bin/sh"]
+    cmd_args.append(globals()["get_function_call_" + viewer](
+        paths_to_filenames, segmentation))
+
+    cmd = "\n".join(cmd_args)
+    path_to_file = os.path.join(dir_output, output_filename)
+    write_to_file(path_to_file, cmd)
+    make_file_executable(path_to_file)
+
+
+##
+# Makes a a file executable.
+# \date       2018-02-21 17:22:40+0000
+#
+# \param      path_to_file  The path to file
+#
+def make_file_executable(path_to_file):
+    os.system("chmod +x %s" % path_to_file)
 
 
 ##
@@ -402,6 +457,30 @@ def get_function_call_fsleyes(filenames, filename_segmentation=None):
         cmd += filenames[i] + " \\\n"
 
     if filename_segmentation is not None:
+        cmd += filename_segmentation + " --alpha 30 -cm hsv \\\n"
+
+    cmd += "&"
+
+    return cmd
+
+
+##
+# Gets the function call for FSL viewer.
+# \date       2017-06-28 17:55:35+0100
+#
+# \param      filenames              list of filenames. If more than one image,
+#                                    the remaining ones are overlaid
+# \param      filename_segmentation  filename of segmentation to be overlaid
+#
+# \return     string to be executed.
+#
+def get_function_call_fslview(filenames, filename_segmentation=None):
+
+    cmd = FSLVIEW_EXE + " \\\n"
+    for i in range(0, len(filenames)):
+        cmd += filenames[i] + " \\\n"
+
+    if filename_segmentation is not None:
         cmd += filename_segmentation + " -t 0.3 \\\n"
 
     cmd += "&"
@@ -446,10 +525,10 @@ def get_function_call_niftyview(filenames, filename_segmentation=None):
 #
 def read_input(infotext, default=None):
     if default is None:
-        text_in = raw_input(infotext + ": ")
+        text_in = input(infotext + ": ")
         return text_in
     else:
-        text_in = raw_input(infotext + " [" + str(default) + "]: ")
+        text_in = input(infotext + " [" + str(default) + "]: ")
 
         if text_in in [""]:
             return default
@@ -706,6 +785,7 @@ def show_images(images, titles=None, cmap="Greys_r", use_colorbar=False, fontfam
 
     return fig
 
+
 ##
 # Shows single 2D/3D array or a list of 2D arrays.
 # \date       2017-02-07 10:06:25+0000
@@ -726,8 +806,6 @@ def show_images(images, titles=None, cmap="Greys_r", use_colorbar=False, fontfam
 # \param      fontsize          The fontsize
 # \param      fontname          "Arial", "Times New Roman" etc
 #
-
-
 def show_arrays(nda,
                 title=None,
                 cmap="Greys_r",
@@ -1188,6 +1266,20 @@ def execute_command(cmd,
     if verbose:
         print_execution(cmd)
 
+    # Does not seem to work the way I want it:
+    # This configuration only prints errors (and excludes warnings) - wohoo!
+    # but does wait for ITK-SNAP to be closed again. Using stderr=devnull
+    # does not wait anymore but also does not print any potential error message
+    # anymore.
+    #
+    # with open(os.devnull, "wb") as devnull:
+    #     process = subprocess.Popen(
+    #         [cmd], shell=True, stdout=devnull, stderr=subprocess.PIPE)
+    #     stdoutdata, stderrdata = process.communicate()
+    #     flag = process.returncode
+    #     if flag != 0:
+    #         print stderrdata
+    #     return flag
     return os.system(cmd)
 
 
@@ -1205,7 +1297,7 @@ def create_directory(directory, delete_files=False, verbose=False):
     #     directory += "/"
 
     # Create directory in case it does not exist already
-    if not os.path.isdir(directory):
+    if not os.path.isdir(directory) and directory is not "":
         os.makedirs(directory)
         if verbose:
             print_info("Directory " + directory + " created.")
@@ -1259,6 +1351,7 @@ def delete_file(path_to_file, verbose=True):
     if verbose:
         print_info("File '%s' deleted." % path_to_file)
 
+
 ##
 # Gets the current date in format year, month and day
 # \date       2017-08-08 16:34:17+0100
@@ -1267,8 +1360,6 @@ def delete_file(path_to_file, verbose=True):
 #
 # \return     The current date as string
 #
-
-
 def get_current_date(separator=""):
     now = datetime.datetime.now()
     date = "%s%s%s%s%s" % (
@@ -1407,7 +1498,7 @@ def create_image_pyramid(length, slope=1, value_bg=0, value_fg=500, offset=(0, 0
 # \return     Image data as numpy array
 #
 def read_image(filename):
-    return np.asarray(Image.open(filename))
+    return skimage.io.imread(filename)
 
 
 def read_file_line_by_line(path_to_file):
@@ -1441,13 +1532,18 @@ def write_file_line_by_line(path_to_file, lines, access_mode="w"):
 #
 # \param      filename  The filename including filename extension
 #
-def write_image(nda, filename, verbose=True):
+def write_image(nda, path_to_file, verbose=True, access_mode="w"):
     # Convert to integer image between 0 and 255
-    nda = np.round(np.array(nda)).astype(np.uint8)
-    im = Image.fromarray(nda)
-    im.save(filename)
+    # nda = np.round(np.array(nda)).astype(np.uint8)
+
+    create_directory(os.path.dirname(path_to_file))
+    skimage.io.imsave(path_to_file, nda)
+
     if verbose:
-        print_info("Data array written to %s." % (filename))
+        print_info("Data array written to '%s'." % (path_to_file))
+
+
+
 
 
 ##
@@ -1497,11 +1593,49 @@ def write_array_to_file(
     access_mode="a",
     verbose=True
 ):
+
+    if not isinstance(array, np.ndarray):
+        raise IOError("Given array must be of type np.ndarray")
+
     file_handle = safe_open(path_to_file, access_mode)
     np.savetxt(file_handle, array, fmt=format, delimiter=delimiter)
     file_handle.close()
     if verbose:
         print_info("Array written to '%s'" % (path_to_file))
+
+
+##
+# Strip filename extension from path
+# \date       2018-04-23 16:12:41-0600
+#
+# \param      path_to_file  path to file, string
+#
+# \return     Return full path to file without filename extension
+#
+def strip_filename_extension(path_to_file):
+    directory = os.path.dirname(path_to_file)
+    basename = os.path.basename(path_to_file)
+
+    splits = basename.split(".")
+    index = len(splits) - 1
+
+    # Check for known extension
+    # Rationale: if a decimal point is in the filename, the simple search for a
+    # separating point causes problems
+    for known_extension in ["nii", "mhd", "txt"]:
+        if known_extension in splits:
+            index = splits.index(known_extension)
+            continue
+
+    basename_no_ext = ".".join(splits[0:index])
+    extension = ".".join(splits[index:])
+
+    return os.path.join(directory, basename_no_ext), extension
+
+
+def replace_filename_extension(path_to_file, extension):
+    filename_no_ext = strip_filename_extension(path_to_file)[0]
+    return ".".join([filename_no_ext, extension])
 
 
 ##
@@ -1514,6 +1648,8 @@ def write_array_to_file(
 # \return appended filename as string
 #
 def append_to_filename(filename, suffix):
-    splits = filename.split(".")
-    splits[0] += suffix
-    return ".".join(splits)
+
+    filename_no_ext, ext = strip_filename_extension(filename)
+    filename_no_ext += suffix
+
+    return ".".join([filename_no_ext, ext])
