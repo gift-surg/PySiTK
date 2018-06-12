@@ -159,7 +159,7 @@ def show_boxplot(data_dic,
                  # palette="hls"
                  # palette="Set1"
                  show_points=True,
-                 show_legend=False,
+                 show_legend=True,
                  ):
 
     # Get maximum array length over all groups and labels
