@@ -41,7 +41,7 @@ def print_table_from_array(nda, nda_std=None, rows=None, cols=None):
 
 def print_table_from_data_dic(data_dic, x_label, labels):
     x_label_entries = len(data_dic.keys())
-    x_label_entry_data = len(data_dic[data_dic.keys()[0]])
+    x_label_entry_data = len(data_dic[tuple(data_dic.keys())[0]])
     nda = np.zeros((x_label_entries, x_label_entry_data))
     nda_std = np.zeros_like(nda)
 
