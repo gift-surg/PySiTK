@@ -1533,9 +1533,6 @@ def write_file_line_by_line(path_to_file, lines, access_mode="w"):
 # \param      filename  The filename including filename extension
 #
 def write_image(nda, path_to_file, verbose=True, access_mode="w"):
-    # Convert to integer image between 0 and 255
-    # nda = np.round(np.array(nda)).astype(np.uint8)
-
     create_directory(os.path.dirname(path_to_file))
     skimage.io.imsave(path_to_file, nda)
 

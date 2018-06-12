@@ -754,6 +754,23 @@ def write_nifti_image_sitk(image_sitk, path_to_file, verbose=0, debug=0):
     if verbose:
         print("done")
 
+def write_nifti_image_nib(image_nib, path_to_file, verbose=0, debug=0):
+
+    ph.create_directory(os.path.dirname(path_to_file))
+    if verbose:
+        ph.print_info("Image written to '%s' ... " % path_to_file, newline=0)
+    nib.save(image_nib, path_to_file)
+
+    flag = ph.execute_command(
+        "fslorient -copysform2qform %s" % path_to_file, verbose=debug)
+
+    if flag != 0:
+        ph.print_warning(
+            "Only q-form is set as fslorient was not successful!")
+
+    if verbose:
+        print("done")
+
 ##
 # Reads a nifti image and returns sitk.Image object.
 #
