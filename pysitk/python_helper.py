@@ -1177,6 +1177,23 @@ def stop_timing(start_time):
 
 
 ##
+# Gets the seconds from timedelta string.
+# \date       2018-06-25 14:33:16-0600
+#
+# \param      timedelta_string  String with format "%H:%M:%S.%f". This is the
+#                               standard output of t.time() in case t is a
+#                               datetime.timedelta object
+#
+# \return     The total seconds from timedelta string. Microseconds are
+#             ignored.
+#
+def get_seconds_from_timedelta_string(timedelta_string):
+    t = datetime.datetime.strptime(timedelta_string, "%H:%M:%S.%f")
+    total_seconds = t.second + t.minute * 60 + t.hour * 3600
+    return total_seconds
+
+
+##
 # Print numpy array in certain format via \p printoptions below
 # \date       2016-11-21 12:56:19+0000
 # \see        http://stackoverflow.com/questions/2891790/pretty-printing-of-numpy-array
@@ -1540,9 +1557,6 @@ def write_image(nda, path_to_file, verbose=True, access_mode="w"):
 
     if verbose:
         print_info("Data array written to '%s'." % (path_to_file))
-
-
-
 
 
 ##
