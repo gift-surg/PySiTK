@@ -204,7 +204,9 @@ def safe_open(path, access_mode='w'):
     if not isinstance(path, str):
         raise IOError("Given path must be of type string")
 
-    mkdir_p(os.path.dirname(path))
+    directory = os.path.dirname(path)
+    if directory != "":
+        mkdir_p(os.path.dirname(path))
     return open(path, access_mode)
 
 
