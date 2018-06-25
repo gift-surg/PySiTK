@@ -521,19 +521,8 @@ def get_transformed_sitk_image(image_init_sitk, transform_sitk):
 #
 # \return     { description_of_the_return_value }
 #
-def read_itk_image(filename, pixel_type=itk.D, dim=3):
-    image_type = itk.Image[pixel_type, dim]
-    # image_IO_type = itk.NiftiImageIO
-
-    reader = itk.ImageFileReader[image_type].New()
-    reader.SetFileName(filename)
-    # reader.SetImageIO(image_IO)
-
-    reader.Update()
-    image_itk = reader.GetOutput()
-    image_itk.DisconnectPipeline()
-
-    return image_itk
+def read_itk_image(filename):
+    return itk.imread(filename)
 
 
 ##
@@ -755,6 +744,18 @@ def write_nifti_image_sitk(image_sitk, path_to_file, verbose=0, debug=0):
     if flag != 0:
         ph.print_warning(
             "Only q-form is set as fslorient was not successful!")
+
+    if verbose:
+        print("done")
+
+
+def write_nifti_image_itk(image_itk, path_to_file, verbose=0, debug=0):
+    ph.create_directory(os.path.dirname(path_to_file))
+    if verbose:
+        ph.print_info("Image written to '%s' ... " % path_to_file, newline=0)
+    itk.imwrite(image_itk, path_to_file)
+    flag = ph.execute_command(
+        "fslorient -forceradiological %s" % path_to_file, verbose=debug)
 
     if verbose:
         print("done")
@@ -1166,7 +1167,7 @@ def get_itk_from_sitk_transform(transform_sitk, pixel_type=itk.D):
         fixed_parameters_itk.SetElement(i, fixed_parameters_sitk[i])
     transform_itk.SetParameters(parameters_itk)
     transform_itk.SetFixedParameters(fixed_parameters_itk)
-    
+
     return transform_itk
 
 
