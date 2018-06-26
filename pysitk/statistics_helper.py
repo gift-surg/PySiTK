@@ -120,6 +120,31 @@ def write_array_to_latex(
     ph.write_to_file(path_to_file, text, access_mode="w", verbose=True)
 
 
+
+##
+# Writes an array to a file in csv style.
+# \date       2018-06-26 09:36:22-0600
+#
+# \param      nda           numpy data array
+# \param      path_to_file  The path to file as string
+# \param      cols          Column labels as list
+# \param      rows          Row labels as list
+# \param      access_mode   Python write mode ("a" for append, "w" for write)
+#
+def write_array_to_csv_file(nda, path_to_file, cols=None, rows=None, access_mode="w"):
+
+    df = pd.DataFrame(nda, columns=cols, index=rows)
+    if rows is None:
+        index = False
+    else:
+        index = True
+
+    if access_mode == "a":
+        df.to_csv(path_to_file, mode=access_mode, header=False, index=index)
+    else:
+        df.to_csv(path_to_file, mode=access_mode, index=index)
+
+
 ##
 # Helper to make current figure fullscreen
 # \date       2018-02-02 19:22:54+0000
@@ -232,7 +257,6 @@ def show_boxplot(data_dic,
     if not show_legend:
         l = plt.legend([])
     sns.despine(offset=10, trim=True)
-
 
     # sns.set_style("whitegrid")
 
