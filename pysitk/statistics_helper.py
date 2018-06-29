@@ -120,18 +120,27 @@ def write_array_to_latex(
     ph.write_to_file(path_to_file, text, access_mode="w", verbose=True)
 
 
-
 ##
 # Writes an array to a file in csv style.
 # \date       2018-06-26 09:36:22-0600
 #
-# \param      nda           numpy data array
-# \param      path_to_file  The path to file as string
-# \param      cols          Column labels as list
-# \param      rows          Row labels as list
-# \param      access_mode   Python write mode ("a" for append, "w" for write)
+# \param      nda             numpy data array
+# \param      path_to_file    The path to file as string
+# \param      decimal_places  Number of decimals to be written
+# \param      cols            Column labels as list
+# \param      rows            Row labels as list
+# \param      access_mode     Python write mode ("a" for append, "w" for write)
 #
-def write_array_to_csv_file(nda, path_to_file, cols=None, rows=None, access_mode="w"):
+def write_array_to_csv_file(
+        nda,
+        path_to_file,
+        decimal_places=2,
+        cols=None,
+        rows=None,
+        access_mode="w"):
+
+    # Round to selected number of significant places
+    nda = np.round(nda, decimals=decimal_places)
 
     df = pd.DataFrame(nda, columns=cols, index=rows)
     if rows is None:
