@@ -204,7 +204,9 @@ def safe_open(path, access_mode='w'):
     if not isinstance(path, str):
         raise IOError("Given path must be of type string")
 
-    mkdir_p(os.path.dirname(path))
+    directory = os.path.dirname(path)
+    if directory != "":
+        mkdir_p(os.path.dirname(path))
     return open(path, access_mode)
 
 
@@ -1175,6 +1177,23 @@ def stop_timing(start_time):
 
 
 ##
+# Gets the seconds from timedelta string.
+# \date       2018-06-25 14:33:16-0600
+#
+# \param      timedelta_string  String with format "%H:%M:%S.%f". This is the
+#                               standard output of t.time() in case t is a
+#                               datetime.timedelta object
+#
+# \return     The total seconds from timedelta string. Microseconds are
+#             ignored.
+#
+def get_seconds_from_timedelta_string(timedelta_string):
+    t = datetime.datetime.strptime(timedelta_string, "%H:%M:%S.%f")
+    total_seconds = t.second + t.minute * 60 + t.hour * 3600
+    return total_seconds
+
+
+##
 # Print numpy array in certain format via \p printoptions below
 # \date       2016-11-21 12:56:19+0000
 # \see        http://stackoverflow.com/questions/2891790/pretty-printing-of-numpy-array
@@ -1533,17 +1552,11 @@ def write_file_line_by_line(path_to_file, lines, access_mode="w"):
 # \param      filename  The filename including filename extension
 #
 def write_image(nda, path_to_file, verbose=True, access_mode="w"):
-    # Convert to integer image between 0 and 255
-    # nda = np.round(np.array(nda)).astype(np.uint8)
-
     create_directory(os.path.dirname(path_to_file))
     skimage.io.imsave(path_to_file, nda)
 
     if verbose:
         print_info("Data array written to '%s'." % (path_to_file))
-
-
-
 
 
 ##

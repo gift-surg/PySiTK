@@ -269,6 +269,11 @@ def read_transform_sitk(path_to_file, inverse=False):
     return transform_sitk
 
 
+def read_transform_itk(path_to_file, inverse=False, pixel_type=itk.D):
+    transform_sitk = read_transform_sitk(path_to_file, inverse=inverse)
+    return get_itk_from_sitk_transform(transform_sitk, pixel_type=pixel_type)
+
+
 def invert_transform_sitk(transform_sitk):
     return getattr(sitk, transform_sitk.GetName())(transform_sitk.GetInverse())
 
@@ -516,19 +521,8 @@ def get_transformed_sitk_image(image_init_sitk, transform_sitk):
 #
 # \return     { description_of_the_return_value }
 #
-def read_itk_image(filename, pixel_type=itk.D, dim=3):
-    image_type = itk.Image[pixel_type, dim]
-    # image_IO_type = itk.NiftiImageIO
-
-    reader = itk.ImageFileReader[image_type].New()
-    reader.SetFileName(filename)
-    # reader.SetImageIO(image_IO)
-
-    reader.Update()
-    image_itk = reader.GetOutput()
-    image_itk.DisconnectPipeline()
-
-    return image_itk
+def read_itk_image(filename):
+    return itk.imread(filename)
 
 
 ##
@@ -746,6 +740,36 @@ def write_nifti_image_sitk(image_sitk, path_to_file, verbose=0, debug=0):
     else:
         flag = ph.execute_command(
             "fslorient -copyqform2sform %s" % path_to_file, verbose=debug)
+
+    if flag != 0:
+        ph.print_warning(
+            "Only q-form is set as fslorient was not successful!")
+
+    if verbose:
+        print("done")
+
+
+def write_nifti_image_itk(image_itk, path_to_file, verbose=0, debug=0):
+    ph.create_directory(os.path.dirname(path_to_file))
+    if verbose:
+        ph.print_info("Image written to '%s' ... " % path_to_file, newline=0)
+    itk.imwrite(image_itk, path_to_file)
+    flag = ph.execute_command(
+        "fslorient -forceradiological %s" % path_to_file, verbose=debug)
+
+    if verbose:
+        print("done")
+
+
+def write_nifti_image_nib(image_nib, path_to_file, verbose=0, debug=0):
+
+    ph.create_directory(os.path.dirname(path_to_file))
+    if verbose:
+        ph.print_info("Image written to '%s' ... " % path_to_file, newline=0)
+    nib.save(image_nib, path_to_file)
+
+    flag = ph.execute_command(
+        "fslorient -forceradiological %s" % path_to_file, verbose=debug)
 
     if flag != 0:
         ph.print_warning(
@@ -1121,6 +1145,30 @@ def get_sitk_from_itk_transform(transform_itk):
     transform_sitk.SetFixedParameters(fixed_parameters_sitk)
 
     return transform_sitk
+
+
+def get_itk_from_sitk_transform(transform_sitk, pixel_type=itk.D):
+    if transform_sitk.GetName() == "AffineTransform":
+        transform_itk = itk.AffineTransform[
+            pixel_type, transform_sitk.GetDimension()].New()
+    else:
+        transform_itk = getattr(itk, transform_sitk.GetName())[
+            pixel_type].New()
+
+    parameters_itk = transform_itk.GetParameters()
+    parameters_sitk = transform_sitk.GetParameters()
+    fixed_parameters_itk = transform_itk.GetFixedParameters()
+    fixed_parameters_sitk = transform_sitk.GetFixedParameters()
+
+    # Update transform parameters
+    for i in range(len(parameters_sitk)):
+        parameters_itk.SetElement(i, parameters_sitk[i])
+    for i in range(len(fixed_parameters_sitk)):
+        fixed_parameters_itk.SetElement(i, fixed_parameters_sitk[i])
+    transform_itk.SetParameters(parameters_itk)
+    transform_itk.SetFixedParameters(fixed_parameters_itk)
+
+    return transform_itk
 
 
 ##

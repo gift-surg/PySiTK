@@ -41,7 +41,7 @@ def print_table_from_array(nda, nda_std=None, rows=None, cols=None):
 
 def print_table_from_data_dic(data_dic, x_label, labels):
     x_label_entries = len(data_dic.keys())
-    x_label_entry_data = len(data_dic[data_dic.keys()[0]])
+    x_label_entry_data = len(data_dic[tuple(data_dic.keys())[0]])
     nda = np.zeros((x_label_entries, x_label_entry_data))
     nda_std = np.zeros_like(nda)
 
@@ -121,6 +121,40 @@ def write_array_to_latex(
 
 
 ##
+# Writes an array to a file in csv style.
+# \date       2018-06-26 09:36:22-0600
+#
+# \param      nda             numpy data array
+# \param      path_to_file    The path to file as string
+# \param      decimal_places  Number of decimals to be written
+# \param      cols            Column labels as list
+# \param      rows            Row labels as list
+# \param      access_mode     Python write mode ("a" for append, "w" for write)
+#
+def write_array_to_csv_file(
+        nda,
+        path_to_file,
+        decimal_places=2,
+        cols=None,
+        rows=None,
+        access_mode="w"):
+
+    # Round to selected number of significant places
+    nda = np.round(nda, decimals=decimal_places)
+
+    df = pd.DataFrame(nda, columns=cols, index=rows)
+    if rows is None:
+        index = False
+    else:
+        index = True
+
+    if access_mode == "a":
+        df.to_csv(path_to_file, mode=access_mode, header=False, index=index)
+    else:
+        df.to_csv(path_to_file, mode=access_mode, index=index)
+
+
+##
 # Helper to make current figure fullscreen
 # \date       2018-02-02 19:22:54+0000
 #
@@ -159,7 +193,7 @@ def show_boxplot(data_dic,
                  # palette="hls"
                  # palette="Set1"
                  show_points=True,
-                 show_legend=False,
+                 show_legend=True,
                  ):
 
     # Get maximum array length over all groups and labels
@@ -232,7 +266,6 @@ def show_boxplot(data_dic,
     if not show_legend:
         l = plt.legend([])
     sns.despine(offset=10, trim=True)
-
 
     # sns.set_style("whitegrid")
 
