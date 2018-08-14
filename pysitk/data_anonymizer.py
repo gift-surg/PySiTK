@@ -60,7 +60,7 @@ class DataAnonymizer(object):
 
         # Identifier based on alphabet
         else:
-            ## ['a', 'b', 'c', ...]
+            # ['a', 'b', 'c', ...]
             alphabet_str = list(string.ascii_lowercase)
 
             # Set identifiers
@@ -132,13 +132,18 @@ class DataAnonymizer(object):
 
         # Create dictionary
         for i in range(0, len(self._filenames)):
+            basename = os.path.basename(os.path.basename(self._filenames[i]))
+            filename, ext = ph.strip_filename_extension(basename)
 
             # Update identifier including the prefix
-            self._identifiers[i] = self._prefix_identifiers + \
-                self._identifiers[i]
+            self._identifiers[i] = "%s%s.%s" % (
+                self._prefix_identifiers,
+                self._identifiers[i],
+                ext
+            )
 
             # Create dictionary
-            self._dictionary[self._identifiers[i]] = self._filenames[i]
+            self._dictionary[self._identifiers[i]] = basename
 
     ##
     # Writes a dictionary.
@@ -148,12 +153,15 @@ class DataAnonymizer(object):
     # \param      filename   The filename without extension
     #
     def write_dictionary(self,
-                         directory,
-                         filename,
+                         path_to_file,
                          filename_backup=None,
                          verbose=False):
 
-        path_to_file = os.path.join(directory, "%s.p" % filename)
+        directory = os.path.dirname((path_to_file))
+        filename, ext = ph.strip_filename_extension(
+            os.path.basename(path_to_file))
+        ph.create_directory(directory)
+
         # Write backup file (human readable)
         if filename_backup is None:
             path_to_file_backup = os.path.join(
@@ -188,13 +196,10 @@ class DataAnonymizer(object):
     # Reads a dictionary.
     # \date       2016-12-06 19:35:51+0000
     #
-    # \param      self       The object
-    # \param      directory  The directory
-    # \param      filename   The filename without extension
+    # \param      self          The object
+    # \param      path_to_file  The path to file
     #
-    def read_dictionary(self, directory, filename):
-
-        path_to_file = os.path.join(directory, "%s.p" % filename)
+    def read_dictionary(self, path_to_file):
 
         # Read dictionary
         f = open(path_to_file, 'rb')
@@ -203,7 +208,6 @@ class DataAnonymizer(object):
 
         # Retrieve identifiers and filenames
         self._identifiers = self._dictionary.keys()
-        self._filenames = self._dictionary.values()
 
     ##
     # Print dictionary line by line
@@ -219,23 +223,28 @@ class DataAnonymizer(object):
         for i in range(0, len(self._filenames)):
             print("\t%s : %s" % (keys[i], self._dictionary[keys[i]]))
 
-    def anonymize_files(self, dir_input, dir_output, filename_extension=".nii.gz"):
+    def anonymize_files(self, dir_output):
+        ph.create_directory(dir_output)
+
+        filenames_in = [os.path.basename(f) for f in self._filenames]
 
         for i in range(0, len(self._filenames)):
+            filename_anonymized = self._identifiers[i]
             filename_original = self._dictionary[
-                self._identifiers[i]] + filename_extension
-            filename_anonymized = self._identifiers[i] + filename_extension
-            path_to_file_orig = os.path.join(dir_input, filename_original)
+                self._identifiers[i]]
+            try:
+                index = filenames_in.index(filename_original)
+            except ValueError:
+                raise IOError(
+                    "Given filenames (--filenames) do not match the ones given in the dictionary")
+
             path_to_file_anon = os.path.join(dir_output, filename_anonymized)
 
-            if not os.path.isfile(path_to_file_orig):
-                print("%s: Nothing to anonymize" % (filename_original))
-            else:
-                cmd = "cp -p "
-                cmd += path_to_file_orig + " "
-                cmd += path_to_file_anon + " "
-                # print(cmd)
-                ph.execute_command(cmd)
+            cmd = "cp -p "
+            cmd += self._filenames[index] + " "
+            cmd += path_to_file_anon + " "
+            # print(cmd)
+            ph.execute_command(cmd)
 
     ##
     # Reveals the anonymization and adds the original filename next to the
@@ -248,56 +257,37 @@ class DataAnonymizer(object):
     #
     # \return     revealed filenames as list of strings
     #
-    def reveal_anonymized_files(self, directory, filename_extension=".nii.gz"):
+    def reveal_anonymized_files(self, directory):
+        ph.create_directory(directory)
 
         filenames_revealed = []
         for i in range(0, len(self._filenames)):
-            filename_anonymized = self._identifiers[i] + filename_extension
-            filename_revealed = self._identifiers[i] + "_" + \
-                self._dictionary[self._identifiers[i]] + filename_extension
-            filename_revealed = re.sub("_masked_srr", "", filename_revealed)
+            basename_anonymized = os.path.basename(self._filenames[i])
+            filename_anonymized = ph.strip_filename_extension(basename_anonymized)[0]
+            try:
+                basename_revealed = self._dictionary[basename_anonymized]
+            except KeyError:
+                raise IOError("Dictionary does not match given (anonymized) filenames")
+            filename_revealed = "%s_%s" % (
+                filename_anonymized, basename_revealed)
 
-            path_to_file_anon = os.path.join(directory, filename_anonymized)
+            # filename_anonymized = self._identifiers[i] + filename_extension
+            # filename_revealed = self._identifiers[i] + "_" + \
+            #     self._dictionary[self._identifiers[i]] + filename_extension
+            # filename_revealed = re.sub("_masked_srr", "", filename_revealed)
+
+            # path_to_file_anon = os.path.join(directory, filename_anonymized)
             path_to_file_reve = os.path.join(directory, filename_revealed)
 
-            if not os.path.isfile(path_to_file_anon):
-                print("%s: Nothing to reveal" % (filename_anonymized))
+            # if not os.path.isfile(path_to_file_anon):
+            #     print("%s: Nothing to reveal" % (filename_anonymized))
 
-            else:
-                cmd = "mv "
-                cmd += path_to_file_anon + " "
-                cmd += path_to_file_reve + " "
-                # print(cmd)
-                ph.execute_command(cmd)
+            cmd = "cp -p "
+            cmd += self._filenames[i] + " "
+            cmd += path_to_file_reve + " "
+            # print(cmd)
+            ph.execute_command(cmd)
 
             filenames_revealed.append(filename_revealed)
         return filenames_revealed
 
-    ##
-    # Reveals the original filenames, assuming that 'reveal_anonymized_files'
-    # has been run already
-    # \date       2016-12-06 20:28:44+0000
-    #
-    # \param      self                The object
-    # \param      directory           The directory
-    # \param      filename_extension  The filename extension
-    #
-    def reveal_original_files(self, directory, filename_extension=".nii.gz"):
-
-        for i in range(0, len(self._filenames)):
-            filename_revealed = self._identifiers[i] + "_" + \
-                self._dictionary[self._identifiers[i]] + filename_extension
-            filename_original = \
-                self._dictionary[self._identifiers[i]] + filename_extension
-            path_to_file_reve = os.path.join(directory, filename_revealed)
-            path_to_file_orig = os.path.join(directory, filename_original)
-
-            if not os.path.isfile(path_to_file_reve):
-                print("%s: Nothing to reveal" % (filename_revealed))
-
-            else:
-                cmd = "cp "
-                cmd += path_to_file_reve + " "
-                cmd += path_to_file_orig + " "
-                # print(cmd)
-                os.system(cmd)

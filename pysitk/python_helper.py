@@ -18,6 +18,7 @@ import contextlib
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.cm
+import json
 import time
 import errno
 import datetime
@@ -644,12 +645,16 @@ def show_curves(y, x=None, xlabel="", ylabel="", title="", xlim=None, ylim=None,
     # Add legend
     # legend = plt.legend(loc=label_location, shadow=label_shadow, frameon=label_frameon)
     # handles, labels = ax.get_legend_handles_labels()
-    # plt.legend(flip(handles, 2), flip(labels, 2), loc="lower center", shadow=label_shadow, frameon=label_frameon, bbox_to_anchor=(0.5, 1), ncol=N_curves/2)
+    # plt.legend(flip(handles, 2), flip(labels, 2), loc="lower center",
+    # shadow=label_shadow, frameon=label_frameon, bbox_to_anchor=(0.5, 1),
+    # ncol=N_curves/2)
 
     if label_fontsize is None:
         label_fontsize = fontsize
 
-    # legend = plt.legend(loc="lower center", shadow=label_shadow, frameon=label_frameon, bbox_to_anchor=(0.47, 1), ncol=4, fontsize=label_fontsize)
+    # legend = plt.legend(loc="lower center", shadow=label_shadow,
+    # frameon=label_frameon, bbox_to_anchor=(0.47, 1), ncol=4,
+    # fontsize=label_fontsize)
     legend = plt.legend(loc=label_location, shadow=label_shadow, frameon=label_frameon,
                         bbox_to_anchor=label_boundingboxtoanchor, ncol=label_ncol, fontsize=label_fontsize)
 
@@ -1589,6 +1594,18 @@ def write_to_file(
             print_info("File '%s' written" % (path_to_file))
         elif access_mode == "a":
             print_info("File '%s' updated" % (path_to_file))
+
+
+def write_dictionary_to_json(dic, path_to_file, access_mode="w", verbose=True):
+    create_directory(os.path.dirname(path_to_file))
+    with open(path_to_file, access_mode) as fp:
+        json.dump(dic, fp, sort_keys=True, indent=4)
+        if verbose:
+            print_info("File written to '%s'." % path_to_file)
+
+
+def read_dictionary_from_json(path_to_file):
+    return json.load(path_to_file)
 
 
 ##

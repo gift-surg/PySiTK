@@ -17,7 +17,7 @@ import pysitk.volume_splitter as vol_split
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Run motion correction")
+    parser = argparse.ArgumentParser(description="Create video from volume")
 
     parser.add_argument('--image',
                         required=True,
