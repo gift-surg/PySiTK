@@ -1188,7 +1188,11 @@ def stop_timing(start_time):
 #             ignored.
 #
 def get_seconds_from_timedelta_string(timedelta_string):
-    t = datetime.datetime.strptime(timedelta_string, "%H:%M:%S.%f")
+    try:
+        t = datetime.datetime.strptime(timedelta_string, "%H:%M:%S.%f")
+    except:
+        t = datetime.datetime.strptime(timedelta_string, "%H:%M:%S")
+
     total_seconds = t.second + t.minute * 60 + t.hour * 3600
     return total_seconds
 
