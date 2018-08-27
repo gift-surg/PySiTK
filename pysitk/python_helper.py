@@ -47,7 +47,6 @@ COLORS_STANDARD = [
 
 # https://matplotlib.org/users/colormaps.html
 # COLORS_TAB20 = [matplotlib.cm.tab20(x/10.) for x in range(0, 10)]
-
 # Tableau20
 COLORS_TABLEAU20 = np.array([
     (31, 119, 180),
