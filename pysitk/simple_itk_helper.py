@@ -29,6 +29,24 @@ from pysitk.definitions import VIEWER
 os.environ['SITK_SHOW_COMMAND'] = ITKSNAP_EXE
 
 
+TRANSFORM_SITK_DOF_LABELS_LONG = {
+    6: ["angle_x [rad]",
+        "angle_y [rad]",
+        "angle_z [rad]",
+        "t_x [mm]",
+        "t_y [mm]",
+        "t_z [mm]"],
+}
+TRANSFORM_SITK_DOF_LABELS_SHORT = {
+    6: ["angle_x",
+        "angle_y",
+        "angle_z",
+        "t_x",
+        "t_y",
+        "t_z"],
+}
+
+
 ##
 # Get composite transform of two affine/euler sitk transforms
 # \see        http://insightsoftwareconsortium.github.io/SimpleITK-Notebooks/Python_html/22_Transforms.html
@@ -195,6 +213,69 @@ def get_sitk_affine_transform_from_sitk_image(image_sitk):
 
     # T(i) = R*S*i + origin
     return sitk.AffineTransform(A, t)
+
+
+##
+# Copy sitk-type transform and return same type
+# \date       2018-04-18 22:51:51-0600
+#
+# \param      transform_sitk  Transform as sitk.Transform
+#
+# \return     Same-type copy of an sitk.Transform
+#
+def copy_transform_sitk(transform_sitk):
+
+    name = transform_sitk.GetName()
+    transform_sitk_copy = eval("sitk.%s" % name)(transform_sitk)
+
+    return transform_sitk_copy
+
+
+def read_transform_sitk(path_to_file, inverse=False):
+    transform_types = {
+        "Euler2DTransform_double_2_2": sitk.Euler2DTransform,
+        "Euler3DTransform_double_3_3": sitk.Euler3DTransform,
+        "AffineTransform_double_2_2": sitk.AffineTransform,
+        "AffineTransform_double_3_3": sitk.AffineTransform,
+        "MatrixOffsetTransformBase_double_3_3": sitk.AffineTransform,
+    }
+
+    # Used for to/from FLIRT transform conversion
+    transform_types_dim = {
+        "MatrixOffsetTransformBase_double_3_3": 3,
+    }
+
+    # read as sitk.Transform
+    transform_sitk = sitk.ReadTransform(path_to_file)
+
+    # convert to correct type of transform, e.g. Euler3DTransform
+    transform_type = ph.read_file_line_by_line(path_to_file)[2]
+    transform_type = re.sub("\n", "", transform_type)
+    transform_type = transform_type.split(" ")[1]
+    if transform_type in ["MatrixOffsetTransformBase_double_3_3"]:
+        transform_sitk_ = sitk.AffineTransform(
+            transform_types_dim[transform_type])
+        transform_sitk_.SetParameters(transform_sitk.GetParameters())
+        transform_sitk_.SetFixedParameters(transform_sitk.GetFixedParameters())
+        transform_sitk = transform_sitk_
+    else:
+        transform_sitk = transform_types[transform_type](transform_sitk)
+
+    # invert transform
+    if inverse:
+        transform_sitk = transform_types[transform_type](
+            transform_sitk.GetInverse())
+
+    return transform_sitk
+
+
+def read_transform_itk(path_to_file, inverse=False, pixel_type=itk.D):
+    transform_sitk = read_transform_sitk(path_to_file, inverse=inverse)
+    return get_itk_from_sitk_transform(transform_sitk, pixel_type=pixel_type)
+
+
+def invert_transform_sitk(transform_sitk):
+    return getattr(sitk, transform_sitk.GetName())(transform_sitk.GetInverse())
 
 
 ##
@@ -440,19 +521,8 @@ def get_transformed_sitk_image(image_init_sitk, transform_sitk):
 #
 # \return     { description_of_the_return_value }
 #
-def read_itk_image(filename, pixel_type=itk.D, dim=3):
-    image_type = itk.Image[pixel_type, dim]
-    # image_IO_type = itk.NiftiImageIO
-
-    reader = itk.ImageFileReader[image_type].New()
-    reader.SetFileName(filename)
-    # reader.SetImageIO(image_IO)
-
-    reader.Update()
-    image_itk = reader.GetOutput()
-    image_itk.DisconnectPipeline()
-
-    return image_itk
+def read_itk_image(filename):
+    return itk.imread(filename)
 
 
 ##
@@ -651,32 +721,68 @@ def write_itk_image(image_itk, filename):
 # \param      image_sitk    Image as sitk.Image object
 # \param      path_to_file  path to filename
 #
-def write_nifti_image_sitk(image_sitk, path_to_file, verbose=False):
+def write_nifti_image_sitk(image_sitk, path_to_file, verbose=0, debug=0):
 
     ph.create_directory(os.path.dirname(path_to_file))
-    sitk.WriteImage(image_sitk, path_to_file)
     if verbose:
-        ph.print_info("Image written to %s." % path_to_file)
+        ph.print_info("Image written to '%s' ... " % path_to_file, newline=0)
+    sitk.WriteImage(image_sitk, path_to_file)
 
     # Use fslorient to copy q-form to s-form. However, in case of a 3D slice,
     # it would set dim0 = 2 incorrectly. Using fslmodhd for such a case seems
     # to do the trick as it updates the s-form as well.
     if image_sitk.GetDimension() == 3 and image_sitk.GetSize()[-1] == 1:
-        flag = ph.execute_command(
-            "fslmodhd %s dim0 3" % path_to_file, verbose=verbose)
+        # Do not apply header update to single slice; causes troubles for
+        # some FSL versions (e.g. 5.0.9)
+        flag = 0
+        # flag = ph.execute_command(
+        #     "fslmodhd %s dim0 3" % path_to_file, verbose=debug)
     else:
         flag = ph.execute_command(
-            "fslorient -copyqform2sform %s" % path_to_file, verbose=verbose)
+            "fslorient -copyqform2sform %s" % path_to_file, verbose=debug)
 
     if flag != 0:
         ph.print_warning(
             "Only q-form is set as fslorient was not successful!")
 
+    if verbose:
+        print("done")
+
+
+def write_nifti_image_itk(image_itk, path_to_file, verbose=0, debug=0):
+    ph.create_directory(os.path.dirname(path_to_file))
+    if verbose:
+        ph.print_info("Image written to '%s' ... " % path_to_file, newline=0)
+    itk.imwrite(image_itk, path_to_file)
+    flag = ph.execute_command(
+        "fslorient -forceradiological %s" % path_to_file, verbose=debug)
+
+    if verbose:
+        print("done")
+
+
+def write_nifti_image_nib(image_nib, path_to_file, verbose=0, debug=0):
+
+    ph.create_directory(os.path.dirname(path_to_file))
+    if verbose:
+        ph.print_info("Image written to '%s' ... " % path_to_file, newline=0)
+    nib.save(image_nib, path_to_file)
+
+    flag = ph.execute_command(
+        "fslorient -forceradiological %s" % path_to_file, verbose=debug)
+
+    if flag != 0:
+        ph.print_warning(
+            "Only q-form is set as fslorient was not successful!")
+
+    if verbose:
+        print("done")
 
 ##
 # Reads a nifti image and returns sitk.Image object.
-# 
+#
 # Potential nan and inf values are replaced by numerical values
+# Remark: Not tested for vector images
 # \date       2018-02-09 00:21:59+0000
 #
 # \param      file_path    The file path as string
@@ -685,11 +791,17 @@ def write_nifti_image_sitk(image_sitk, path_to_file, verbose=False):
 #
 # \return     Nifti image as sitk.Object
 #
+
+
 def read_nifti_image_sitk(
         file_path,
         pixel_type=sitk.sitkUnknown,
         replace_nan=1):
     image_sitk = sitk.ReadImage(str(file_path), pixel_type)
+
+    # Do not deal with vector images here
+    if image_sitk.GetNumberOfComponentsPerPixel() > 1:
+        return image_sitk
 
     # Replace nan (and inf) with numerical values
     if replace_nan:
@@ -1033,6 +1145,30 @@ def get_sitk_from_itk_transform(transform_itk):
     transform_sitk.SetFixedParameters(fixed_parameters_sitk)
 
     return transform_sitk
+
+
+def get_itk_from_sitk_transform(transform_sitk, pixel_type=itk.D):
+    if transform_sitk.GetName() == "AffineTransform":
+        transform_itk = itk.AffineTransform[
+            pixel_type, transform_sitk.GetDimension()].New()
+    else:
+        transform_itk = getattr(itk, transform_sitk.GetName())[
+            pixel_type].New()
+
+    parameters_itk = transform_itk.GetParameters()
+    parameters_sitk = transform_sitk.GetParameters()
+    fixed_parameters_itk = transform_itk.GetFixedParameters()
+    fixed_parameters_sitk = transform_sitk.GetFixedParameters()
+
+    # Update transform parameters
+    for i in range(len(parameters_sitk)):
+        parameters_itk.SetElement(i, parameters_sitk[i])
+    for i in range(len(fixed_parameters_sitk)):
+        fixed_parameters_itk.SetElement(i, fixed_parameters_sitk[i])
+    transform_itk.SetParameters(parameters_itk)
+    transform_itk.SetFixedParameters(fixed_parameters_itk)
+
+    return transform_itk
 
 
 ##

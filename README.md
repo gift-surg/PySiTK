@@ -1,7 +1,7 @@
 # PySiTK 
 
 PySiTK is a Python-based open-source toolkit that provides a collection of helper functions to facilitate IO, printing, plotting, ... and the interaction between [SimpleITK][simpleitk] and [ITK_NiftyMIC][itkniftymic].
-Please not that currently **only Python 2** is supported.
+Please note that currently **only Python 2** is supported.
 
 The algorithm and software were developed by [Michael Ebner][mebner] at the [Translational Imaging Group][tig] in the [Centre for Medical Image Computing][cmic] at [University College London (UCL)][ucl].
 

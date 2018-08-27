@@ -31,8 +31,9 @@ class VolumeSplitter(object):
     #                   nda[i, :, :] (following a potential SimpleITK to numpy
     #                   array conversion)
     #
-    def __init__(self, nda):
+    def __init__(self, nda, axis=0):
         self._nda = nda
+        self._axis = axis
 
     ##
     # Rescale data array such that volume is scaled between val_min and val_max
@@ -65,14 +66,28 @@ class VolumeSplitter(object):
     # \param      filename    Filename of image files; string. Slice number
     #                         will be automatically appended
     #
-    def export_slices(self, dir_output, filename):
+    def export_slices(self, dir_output, filename, begin=None, end=None):
         ph.create_directory(dir_output)
 
+        if begin is None:
+            begin = 0
+        if end is None:
+            end = self._nda.shape[self._axis]
+
         # Write each slice individually
-        for k in range(0, self._nda.shape[0]):
+        for k in range(begin, end):
+            if self._axis == 0:
+                nda_2d = self._nda[k, :, :]
+            elif self._axis == 1:
+                nda_2d = self._nda[:, k, :]
+            else:
+                nda_2d = self._nda[:, :, k]
+            # nda_2d = np.swapaxes(nda_2d, 0, 1)
+            nda_2d = nda_2d[::-1, :]
+
             path_to_image = os.path.join(
-                dir_output, self._get_filename_slice(filename, k+1))
-            ph.write_image(self._nda[k, :, :], path_to_image, verbose=True)
+                dir_output, self._get_filename_slice(filename, k + 1))
+            ph.write_image(nda_2d, path_to_image, verbose=True)
 
     ##
     # Creates a video.
@@ -85,10 +100,13 @@ class VolumeSplitter(object):
     #
     # \return     { description_of_the_return_value }
     #
-    def create_video(self, dir_output_video, dir_input_slices, filename, fps=1):
+    def create_video(self, path_to_video, dir_input_slices, fps=1):
 
+        dir_output_video = os.path.dirname(path_to_video)
+        filename = os.path.basename(path_to_video).split(".")[0]
         path_to_slices = "%s*.png" % os.path.join(dir_input_slices, filename)
         path_to_video = os.path.join(dir_output_video, "%s.mp4" % filename)
+
         path_to_video_tmp = os.path.join(
             dir_output_video, "%s_tmp.mp4" % filename)
 
@@ -97,12 +115,12 @@ class VolumeSplitter(object):
             raise IOError("Folder '%s' meant to contain exported slices does "
                           "not exist" % dir_input_slices)
 
-        # Check that the folder contains exported slices as png files
-        if not ph.file_exists(os.path.join(
-                dir_input_slices, self._get_filename_slice(filename, 1))):
-            raise IOError(
-                "Slices '%s' need to be generated first using "
-                "'export_slices'" % (path_to_slices))
+        # Check that the folder contains exported slices as png files        
+        # if not ph.file_exists(os.path.join(
+        #         dir_input_slices, self._get_filename_slice(filename, 1))):
+        #     raise IOError(
+        #         "Slices '%s' need to be generated first using "
+        #         "'export_slices'" % (path_to_slices))
 
         # Create output folder for video
         ph.create_directory(dir_output_video)
@@ -110,7 +128,7 @@ class VolumeSplitter(object):
         # ---------------Create temp video from exported slices----------------
         cmd_args = []
         cmd_args.append("-monitor")
-        cmd_args.append("-delay %d" % (100./fps))
+        cmd_args.append("-delay %d" % (100. / fps))
 
         cmd_exe = "convert"
 
