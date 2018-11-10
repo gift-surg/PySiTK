@@ -1350,7 +1350,7 @@ def clear_directory(directory, verbose=True):
             print_info("All files in " + directory + " are removed.")
     else:
         if verbose:
-            print_info("Directory %s did not exist. It was created now."
+            print_info("Directory %s did not exist. It has been created now."
                        % directory)
     create_directory(directory)
 

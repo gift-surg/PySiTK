@@ -27,7 +27,7 @@ This framework is made available as free open-source software under the [BSD-3-C
 This work is partially funded by the UCL [Engineering and Physical Sciences Research Council (EPSRC)][epsrc] Centre for Doctoral Training in Medical Imaging (EP/L016478/1), the Innovative Engineering for Health award ([Wellcome Trust][wellcometrust] [WT101957] and [EPSRC][epsrc] [NS/A000027/1]), and supported by researchers at the [National Institute for Health Research][nihr] [University College London Hospitals (UCLH)][uclh] Biomedical Research Centre.
 
 [citation]: https://www.sciencedirect.com/science/article/pii/S1053811917308042
-[mebner]: http://cmictig.cs.ucl.ac.uk/people/phd-students/michael-ebner
+[mebner]: https://www.linkedin.com/in/ebnermichael
 [tig]: http://cmictig.cs.ucl.ac.uk
 [bsd]: https://opensource.org/licenses/BSD-3-Clause
 [giftsurg]: http://www.gift-surg.ac.uk
