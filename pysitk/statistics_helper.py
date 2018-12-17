@@ -1,4 +1,5 @@
 
+import re
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -58,21 +59,51 @@ def get_arrays_from_data_dic(data_dic):
     return nda, nda_std
 
 
+##
+# Writes an array to latex table file.
+# \date       2018-12-15 20:34:50+0000
+#
+# \param      path_to_file    The path to file, string
+# \param      nda             numpy data array
+# \param      nda_std         standard deviation, numpy data array
+# \param      nda_sig         significance outcome, bool numpy data array
+# \param      rows            row titles as list of strings
+# \param      cols            column titles as list of string
+# \param      row_title       additional 'row title', i.e. left-upper corner,
+#                             string
+# \param      decimal_places  Number of decimal places to be printed, integer
+# \param      verbose         verbose output, bool
+# \param      compact         compact style, i.e. remove white spaces, bool
+#
 def write_array_to_latex(
         path_to_file,
         nda,
         nda_std=None,
+        nda_sig=None,
         rows=None,
         cols=None,
         row_title=None,
         decimal_places=2,
         verbose=1,
+        compact=False,
 ):
 
     lines = []
     sep = " & "
     newline = " \\\\\n"
     nan_symbol = "---"
+
+    # Statistical significance (only printed if nda_sig given)
+    sym = "$^*$"
+    nda_sym = np.chararray(nda.shape, itemsize=8)
+    if nda_sig is not None:
+        for index, val in np.ndenumerate(nda_sig):
+            if val:
+                nda_sym[index] = sym
+            else:
+                nda_sym[index] = ""
+    else:
+        nda_sym[:] = ""
 
     # \begin{tabular}{tabular_options}
     tabular_options = 'c' * nda.shape[1]
@@ -96,22 +127,27 @@ def write_array_to_latex(
         if nda_std is None:
             line_args = [
                 # "\\num{%s}" % (
-                "%s" % (
-                    '{:.{prec}f}'.format(f, prec=decimal_places)
+                "%s%s" % (
+                    '{:.{prec}f}'.format(f, prec=decimal_places),
+                    p,
                 ) if not np.isnan(f)
                 else nan_symbol
-                for f in nda[i_row, :]
+                for (f, p) in zip(nda[i_row, :], nda_sym[i_row, :])
             ]
         else:
             line_args = [
                 # "\\num{%s \\pm %s}" % (
-                "%s $\\pm$ %s" % (
+                "%s $\\pm$ %s%s" % (
                     '{:.{prec}f}'.format(m, prec=decimal_places),
-                    '{:.{prec}f}'.format(s, prec=decimal_places)
+                    '{:.{prec}f}'.format(s, prec=decimal_places),
+                    p,
                 ) if not np.isnan(m)
                 else nan_symbol
-                for (m, s) in zip(nda[i_row, :], nda_std[i_row, :])
+                for (m, s, p) in zip(nda[i_row, :], nda_std[i_row, :], nda_sym[i_row, :])
             ]
+            if compact:
+                # remove white spaces
+                line_args = [re.sub(" ", "", l) for l in line_args]
         if rows is not None:
             line_args.insert(0, "\\bf %s" % rows[i_row])
         lines.append("%s%s" % (sep.join(line_args), newline))
