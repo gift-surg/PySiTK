@@ -18,5 +18,6 @@ import os
 from simple_itk_helper_test import *
 
 if __name__ == '__main__':
+
     print("\nUnit tests:\n--------------")
     unittest.main()
