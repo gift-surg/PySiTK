@@ -673,7 +673,7 @@ def write_sitk_vector_image(vector_image_sitk, filename):
 
     image_nib = nib.Nifti1Pair(nda_nib, A_nib)
     nib.save(image_nib, filename)
-    ph.print_info("Image is successfully written to '%s'." % (filename))
+    ph.print_info("Vector image written to '%s'." % (filename))
 
 
 #
@@ -1573,26 +1573,6 @@ def show_sitk_image(image_sitk,
         label = [None] * len(image_sitk)
         for i in range(0, len(image_sitk)):
             label[i] = tmp[0] + str(i)
-
-    for i in range(1, len(image_sitk)):
-        # In case images are not in the same physical space, resample them
-        try:
-            image_sitk[i] - image_sitk[0]
-        except:
-            if default_pixel_value == "min":
-                default_pixel_value_sitk = float(
-                    np.min(sitk.GetArrayFromImage(image_sitk[i])))
-            else:
-                default_pixel_value_sitk = float(default_pixel_value)
-
-            image_sitk[i] = sitk.Resample(
-                image_sitk[i],
-                image_sitk[0],
-                eval("sitk.Euler%dDTransform()" %
-                     (image_sitk[0].GetDimension())),
-                eval("sitk.sitk" + interpolator),
-                default_pixel_value_sitk)
-            label[i] += "_" + interpolator
 
     # Write images to tmp-folder
     filenames = [None] * len(image_sitk)
