@@ -9,19 +9,25 @@
 # \date       July 2017
 #
 
+
+import os
 from setuptools import setup
 
-with open("./README.md", "r") as fh:
+DIR_ROOT = os.path.realpath(os.path.dirname(os.path.abspath(__file__)))
+
+with open("README.md", "r") as fh:
     long_description = fh.read()
 
-def install_requires(fname="./requirements.txt"):
-  with open(fname) as f:
-      content = f.readlines()
-  content = [x.strip() for x in content]
-  return content
+
+def install_requires(fname="requirements.txt"):
+    fname = os.path.join(DIR_ROOT, fname)
+    with open(fname) as f:
+        content = f.readlines()
+    content = [x.strip() for x in content]
+    return content
 
 setup(name='PySiTK',
-      version='0.2.6',
+      version='0.2.7',
       description='Python SimpleITK/WrapITK helper scripts',
       long_description=long_description,
       long_description_content_type="text/markdown",
