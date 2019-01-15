@@ -9,16 +9,18 @@
 # \date       July 2017
 #
 
+
 from setuptools import setup
 
-with open("./README.md", "r") as fh:
+with open("README.md", "r") as fh:
     long_description = fh.read()
 
-def install_requires(fname="./requirements.txt"):
-  with open(fname) as f:
-      content = f.readlines()
-  content = [x.strip() for x in content]
-  return content
+
+def install_requires(fname="requirements.txt"):
+    with open(fname) as f:
+        content = f.readlines()
+    content = [x.strip() for x in content]
+    return content
 
 setup(name='PySiTK',
       version='0.3rc1',
