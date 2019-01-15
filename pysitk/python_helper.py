@@ -1604,7 +1604,12 @@ def write_dictionary_to_json(dic, path_to_file, access_mode="w", verbose=True):
 
 
 def read_dictionary_from_json(path_to_file):
-    return json.load(path_to_file)
+    try:
+        with open(path_to_file) as json_file:
+            dic = json.load(json_file)
+    except json.decoder.JSONDecodeError as e:
+        raise IOError("JSON file cannot be read. %s" % e)
+    return dic
 
 
 ##
