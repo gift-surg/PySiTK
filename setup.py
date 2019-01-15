@@ -10,7 +10,7 @@
 #
 
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -31,7 +31,7 @@ setup(name='PySiTK',
       author='Michael Ebner',
       author_email='michael.ebner.14@ucl.ac.uk',
       license='BSD-3-Clause',
-      packages=['pysitk'],
+      packages=find_packages(),
       install_requires=install_requires(),
       zip_safe=False,
       keywords='development ITK SimpleITK',
