@@ -5,6 +5,7 @@ import pandas as pd
 import seaborn as sns
 import itertools
 import matplotlib.pyplot as plt
+import collections
 
 import scipy.stats
 import pysitk.python_helper as ph
@@ -229,6 +230,7 @@ def show_boxplot(data_dic,
                  x_label,
                  labels,
                  ref="cls",
+                 y_label="value",
                  palette=None,
                  # palette="husl"
                  # palette="hls"
@@ -274,13 +276,14 @@ def show_boxplot(data_dic,
         id_vars=ref,
         value_vars=data_dic.keys(),
         var_name=x_label,
+        value_name=y_label,
     )
 
     sns.set(style="ticks")
     # sns.set_style("whitegrid")
     b = sns.boxplot(
         x=x_label,
-        y="value",  # only y="value" works!?!
+        y=y_label,
         data=df_melt,
         hue=ref,  # different colors for different ref
         width=0.5,
@@ -291,7 +294,7 @@ def show_boxplot(data_dic,
     if show_points:
         sns.stripplot(
             x=x_label,
-            y="value",
+            y=y_label,
             data=df_melt,
             hue=ref,
             size=7,
@@ -302,7 +305,13 @@ def show_boxplot(data_dic,
         )
         b_handles, b_labels = b.get_legend_handles_labels()
         n_labels = len(data_dic.keys())
-        l = plt.legend(b_handles[0:len(labels)], b_labels[0:len(labels)])
+        l = plt.legend(b_handles[0:len(labels)], b_labels[0:len(labels)],
+                       ncol=len(labels), mode="expand", loc="lower center", bbox_to_anchor=(0, 0.95, 1, 0.2),
+                       )
+    else:
+        l = plt.legend(ncol=len(labels), mode="expand", loc="lower center",
+                       bbox_to_anchor=(0, 0.95, 1, 0.2),
+                       )
 
     if not show_legend:
         l = plt.legend([])
@@ -415,37 +424,91 @@ def show_scatter_plot(x, y, x_label, y_label):
 # \param      x_label  The x label
 # \param      y_label  The y label
 #
-def show_bland_altman_plot(x, y, x_label, y_label):
+def show_bland_altman_plot(
+        x,
+        y,
+        x_label,
+        y_label,
+        # color_points=ph.COLORS_TABLEAU20[4],  # green
+        color_points=ph.COLORS_TABLEAU20[0],  # blue
+        marker_points="o",
+        color_lines=ph.COLORS_TABLEAU20[2],  # orange
+        bubble_chart=False,
+        annotations=True,
+        non_parametric=False,
+):
 
-    marker_points = "o"
-    color_points = ph.COLORS_TABLEAU20[4]
-    color_lines = ph.COLORS_TABLEAU20[2]
-    markerfacecolor_points = "white",
-
-    # Plot data
-    plt.plot((x + y) / 2., x - y,
-             color=color_points,
-             marker=marker_points,
-             # markerfacecolor=markerfacecolor_points,
-             linestyle="")
+    # markerfacecolor_points="white",
 
     axes = plt.gca()
-    xmin, xmax = axes.get_xlim()
-
-    # Plot mean and mean +- 1.96 sigma helper lines
-    mu = np.mean(x - y)
-    sigma = np.std(x - y)
-    plt.plot([xmax, xmin], np.ones(2) * mu,
-             color=color_lines, linestyle="-")
-    plt.plot([xmax, xmin], np.ones(2) * (mu + sigma * 1.96),
-             color=color_lines, linestyle="--")
-    plt.plot([xmax, xmin], np.ones(2) * (mu - sigma * 1.96),
-             color=color_lines, linestyle="--")
-    plt.plot([xmax, xmin], np.ones(2) * mu,
-             color=color_lines, linestyle="-")
 
     # Plot zero line
-    axes.axhline(y=0, color='k')
+    axes.axhline(y=0, color='k', linewidth=1, linestyle="-")
 
-    plt.xlabel("(%s + %s)/2" % (x_label, y_label))
+    # Plot data
+    if not bubble_chart:
+        plt.plot((x + y) / 2., x - y,
+                 color=color_points,
+                 marker=marker_points,
+                 # markerfacecolor=markerfacecolor_points,
+                 linestyle="",
+                 )
+    else:
+        # Count frequency of repeating points in list
+        points = [(i, j) for i, j in zip((x + y) / 2., x - y)]
+        counter = collections.Counter(points)
+
+        # Extract unique points for x and y in scatter plot
+        a = [k[0] for k in counter.keys()]
+        b = [k[1] for k in counter.keys()]
+
+        # Extract frequency of unique points; scale for visualization
+        s = np.array(counter.values())
+        s *= 50
+
+        plt.scatter(a, b, s=s,
+                    color=color_points,
+                    marker=marker_points,
+                    )
+
+    if non_parametric:
+        labels = ["Median", "95% LoA"]
+        mid = np.median(x-y)
+        upper = np.percentile(x-y, 97.5)
+        lower = np.percentile(x-y, 2.5)
+    else:
+        labels = ["Mean", "95% LoA"]
+        # Mean and mean +- 1.96 sigma helper lines
+        mid = np.mean(x - y)
+        sigma = np.std(x - y)
+        upper = mid + sigma * 1.96
+        lower = mid - sigma * 1.96
+
+    axes.axhline(y=upper, color=color_lines, linewidth=1, linestyle="--")
+    axes.axhline(y=mid, color=color_lines, linewidth=1, linestyle="-.")
+    axes.axhline(y=lower, color=color_lines, linewidth=1, linestyle="--")
+
+    if annotations:
+        xlim = np.array(axes.get_xlim())
+        ylim = np.array(axes.get_ylim())
+        center = np.mean(xlim)
+        offset_x = (xlim[1] - xlim[0]) / 50.
+        offset_y = (ylim[1] - ylim[0]) / 20.
+        if mid != upper:
+            plt.text(xlim[1] - offset_x, mid - offset_y, labels[0],
+                     color=color_lines, va='center', ha='right', size='smaller')
+            plt.text(xlim[1] - offset_x, upper - offset_y, labels[1],
+                     color=color_lines, va='center', ha='right', size='smaller')
+        elif mid != lower:
+            plt.text(xlim[1] - offset_x, mid + offset_y, labels[0],
+                     color=color_lines, va='center', ha='right', size='smaller')
+            plt.text(xlim[1] - offset_x, lower + offset_y, labels[1],
+                     color=color_lines, va='center', ha='right', size='smaller')
+        else:
+            plt.text(xlim[1] - offset_x, mid - offset_y, ", ".join(labels),
+                     color=color_lines, va='center', ha='right', size='smaller')
+        # plt.text(xlim[1] - offset_x, lower - offset_y, '$\mu-1.96\sigma$',
+        #          color=color_lines, va='center', ha='right', size='smaller')
+
+    plt.xlabel("(%s + %s) / 2" % (x_label, y_label))
     plt.ylabel("%s - %s" % (x_label, y_label))
