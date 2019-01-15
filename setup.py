@@ -11,8 +11,8 @@
 
 from setuptools import setup
 
-long_description = "This package contains scripts to facilitate IO, " \
-    "printing, plotting, ... and the interaction between SimpleITK and WrapITK"
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
 setup(name='PySiTK',
       version='0.3rc1',
