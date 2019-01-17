@@ -24,7 +24,9 @@ def install_requires(fname="requirements.txt"):
 
 setup(name='PySiTK',
       version='0.3rc1',
-      description='Python SimpleITK/WrapITK helper scripts',
+      description="PySiTK is a research-focused toolkit containing a "
+      "collection of Python helper functions. In particular it facilitates "
+      "the interaction between SimpleITK and ITK.",
       long_description=long_description,
       long_description_content_type="text/markdown",
       url='https://github.com/gift-surg/PySiTK',
