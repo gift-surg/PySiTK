@@ -273,7 +273,7 @@ class SimpleItkHelperTest(unittest.TestCase):
             sitkh.get_sitk_affine_transform_from_sitk_image(self.image_sitk)
 
         for i in range(0, N_points):
-            index = indices[:, i]
+            index = [int(j) for j in indices[:, i]]
 
             # Check Alignment
             self.assertEqual(np.around(np.linalg.norm(np.array(
@@ -306,7 +306,7 @@ class SimpleItkHelperTest(unittest.TestCase):
             self.assertEqual(np.around(np.linalg.norm(
                 (A.dot(index) + t).flatten() -
                 self.image_sitk.TransformIndexToPhysicalPoint(
-                    index.flatten())), decimals=self.accuracy), 0)
+                    [int(j) for j in index])), decimals=self.accuracy), 0)
 
     # Test whether \p get_transformed_sitk_image works correct in the rigid and
     #  more general affine case
@@ -400,7 +400,8 @@ class SimpleItkHelperTest(unittest.TestCase):
             self.image_sitk)
         nda_2 = np.zeros_like(nda)
         for i in range(0, nda_2.size):
-            nda_2[i] = self.image_sitk.GetPixel(*indices[:, i])
+            index = [int(j) for j in indices[:, i]]
+            nda_2[i] = self.image_sitk.GetPixel(*index)
 
         self.assertEqual(np.round(
             np.linalg.norm(nda_2 - nda),
@@ -414,7 +415,8 @@ class SimpleItkHelperTest(unittest.TestCase):
             self.image_sitk)
         nda_2 = np.zeros_like(nda)
         for i in range(0, nda_2.size):
-            nda_2[i] = self.image_sitk.GetPixel(*indices[:, i])
+            index = [int(j) for j in indices[:, i]]
+            nda_2[i] = self.image_sitk.GetPixel(*index)
 
         self.assertEqual(np.round(
             np.linalg.norm(nda_2 - nda),
