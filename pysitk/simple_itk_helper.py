@@ -7,23 +7,21 @@
 #
 
 
-# Import libraries
+import re
 import os
-import SimpleITK as sitk
 import itk
+import fnmatch
+import datetime
+import subprocess
 import numpy as np
 import nibabel as nib
+import SimpleITK as sitk
 import matplotlib.pyplot as plt
-import datetime
-import fnmatch
-import re
 
-# Import modules
 import pysitk.python_helper as ph
-
+from pysitk.definitions import VIEWER
 from pysitk.definitions import DIR_TMP
 from pysitk.definitions import ITKSNAP_EXE, FSLVIEW_EXE, NIFTYVIEW_EXE
-from pysitk.definitions import VIEWER
 
 # Use ITK-SNAP instead of imageJ to view images
 os.environ['SITK_SHOW_COMMAND'] = ITKSNAP_EXE
@@ -721,7 +719,7 @@ def write_itk_image(image_itk, filename):
 # \param      image_sitk    Image as sitk.Image object
 # \param      path_to_file  path to filename
 #
-def write_nifti_image_sitk(image_sitk, path_to_file, verbose=0, debug=0):
+def write_nifti_image_sitk(image_sitk, path_to_file, verbose=0):
 
     ph.create_directory(os.path.dirname(path_to_file))
     if verbose:
@@ -738,8 +736,7 @@ def write_nifti_image_sitk(image_sitk, path_to_file, verbose=0, debug=0):
         # flag = ph.execute_command(
         #     "fslmodhd %s dim0 3" % path_to_file, verbose=debug)
     else:
-        flag = ph.execute_command(
-            "fslorient -copyqform2sform %s" % path_to_file, verbose=debug)
+        flag = subprocess.call(["fslorient", "-copyqform2sform", path_to_file])
 
     if flag != 0:
         ph.print_warning(
@@ -749,27 +746,25 @@ def write_nifti_image_sitk(image_sitk, path_to_file, verbose=0, debug=0):
         print("done")
 
 
-def write_nifti_image_itk(image_itk, path_to_file, verbose=0, debug=0):
+def write_nifti_image_itk(image_itk, path_to_file, verbose=0):
     ph.create_directory(os.path.dirname(path_to_file))
     if verbose:
         ph.print_info("Image written to '%s' ... " % path_to_file, newline=0)
     itk.imwrite(image_itk, path_to_file)
-    flag = ph.execute_command(
-        "fslorient -forceradiological %s" % path_to_file, verbose=debug)
+    flag = subprocess.call(["fslorient", "-forceradiological", path_to_file])
 
     if verbose:
         print("done")
 
 
-def write_nifti_image_nib(image_nib, path_to_file, verbose=0, debug=0):
+def write_nifti_image_nib(image_nib, path_to_file, verbose=0):
 
     ph.create_directory(os.path.dirname(path_to_file))
     if verbose:
         ph.print_info("Image written to '%s' ... " % path_to_file, newline=0)
     nib.save(image_nib, path_to_file)
 
-    flag = ph.execute_command(
-        "fslorient -forceradiological %s" % path_to_file, verbose=debug)
+    flag = subprocess.call(["fslorient", "-forceradiological", path_to_file])
 
     if flag != 0:
         ph.print_warning(

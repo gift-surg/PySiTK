@@ -9,11 +9,18 @@
 # \date       July 2017
 #
 
+import os
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
+
+
+about = {}
+base_dir = os.path.dirname(__file__)
+with open(os.path.join(base_dir, "pysitk", "__about__.py")) as fp:
+    exec(fp.read(), about)
 
 
 def install_requires(fname="requirements.txt"):
@@ -22,31 +29,32 @@ def install_requires(fname="requirements.txt"):
     content = [x.strip() for x in content]
     return content
 
-setup(name='PySiTK',
-      version='0.2.8',
-      description='Python SimpleITK/WrapITK helper scripts',
-      long_description=long_description,
-      long_description_content_type="text/markdown",
-      url='https://github.com/gift-surg/PySiTK',
-      author='Michael Ebner',
-      author_email='michael.ebner.14@ucl.ac.uk',
-      license='BSD-3-Clause',
-      packages=['pysitk'],
-      install_requires=install_requires(),
-      zip_safe=False,
-      keywords='development ITK SimpleITK',
-      classifiers=[
-          'Intended Audience :: Developers',
-          'Intended Audience :: Healthcare Industry',
-          'Intended Audience :: Science/Research',
+setup(
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    name=about["__title__"],
+    version=about["__version__"],
+    description=about["__summary__"],
+    url=about["__uri__"],
+    author=about["__author__"],
+    author_email=about["__email__"],
+    license=about["__license__"],
+    packages=find_packages(),
+    install_requires=install_requires(),
+    zip_safe=False,
+    keywords='development ITK SimpleITK',
+    classifiers=[
+        'Intended Audience :: Developers',
+        'Intended Audience :: Healthcare Industry',
+        'Intended Audience :: Science/Research',
 
-          'License :: OSI Approved :: BSD License',
+        'License :: OSI Approved :: BSD License',
 
-          'Topic :: Software Development :: Build Tools',
-          'Topic :: Scientific/Engineering :: Medical Science Apps.',
+        'Topic :: Software Development :: Build Tools',
+        'Topic :: Scientific/Engineering :: Medical Science Apps.',
 
-          'Programming Language :: Python',
-          'Programming Language :: Python :: 2',
-          'Programming Language :: Python :: 3',
-      ],
-      )
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
+    ],
+)
