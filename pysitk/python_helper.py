@@ -302,6 +302,20 @@ def killall_itksnap():
 
 
 ##
+# Kill all FSLeyes processes
+# \date       2018-02-21 17:36:54+0000
+#
+# \return     { description_of_the_return_value }
+#
+def killall_fsleyes():
+    with open(os.devnull, "wb") as devnull:
+        subprocess.call(
+            ["killall", "fsleyes"], stdout=devnull, stderr=subprocess.STDOUT)
+        subprocess.call(
+            ["killall", "FSLeyes"], stdout=devnull, stderr=subprocess.STDOUT)
+
+
+##
 # Adds one to variable by taking advantage of pass by reference of list objects
 #
 # Idea is to use it for consecutive numbering, e.g. to generate batch jobs
@@ -1297,8 +1311,6 @@ def execute_command(cmd,
     # This configuration only prints errors (and excludes warnings) - wohoo!
     # but does wait for ITK-SNAP to be closed again. Using stderr=devnull
     # does not wait anymore but also does not print any potential error message
-    # anymore.
-    #
     # with open(os.devnull, "wb") as devnull:
     #     process = subprocess.Popen(
     #         [cmd], shell=True, stdout=devnull, stderr=subprocess.PIPE)
@@ -1307,7 +1319,11 @@ def execute_command(cmd,
     #     if flag != 0:
     #         print stderrdata
     #     return flag
-    return os.system(cmd)
+    # with open(os.devnull, "wb") as devnull:
+        # flag = subprocess.call(cmd)
+    flag = os.system(cmd)
+
+    return flag
 
 
 ##
