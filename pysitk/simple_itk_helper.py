@@ -764,7 +764,7 @@ def apply_fslorient(path_to_file):
     # TODO: Depending on the NIfTI image, either s- or q-form is set but not
     # necessarily both. 'fslorient forceneurological/forceradiological' would
     # do the trick to set them regardless of whether s- or q-form is given but
-    # might cause troubles as consequences are not properly tested.
+    # may have unintended consequences since not properly tested.
 
     # flag = subprocess.call(["fslorient", "-forceradiological", path_to_file])
     # flag = subprocess.call(["fslorient", "-forceneurological", path_to_file])
