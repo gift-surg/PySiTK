@@ -674,39 +674,6 @@ def write_sitk_vector_image(vector_image_sitk, filename):
     ph.print_info("Vector image written to '%s'." % (filename))
 
 
-#
-# Write itk image to hard disk as nii.gz image type
-# \date       2017-06-26 17:05:26+0100
-#
-# \param[in]  image_itk  image to be written as itk.Image object
-# \param[in]  filename   filename including file ending ".nii.gz"
-#
-def write_itk_image(image_itk, filename):
-
-    # Get image type and dimension for setting up the writer
-    dim = image_itk.GetImageDimension()
-    type_image_itk = type(image_itk)
-
-    if type_image_itk is itk.Image[itk.D, dim]:
-        image_type = itk.Image[itk.D, dim]
-
-    elif type_image_itk is itk.Image[itk.UC, dim]:
-        image_type = itk.Image[itk.UC, dim]
-
-    else:
-        raise ValueError(
-            "Error: ITK image type not known to set up image writer")
-
-    # Define writer
-    writer = itk.ImageFileWriter[image_type].New()
-    # image_IO_type = itk.NiftiImageIO
-
-    # Write image_itk
-    writer.SetInput(image_itk)
-    writer.SetFileName(filename)
-    writer.Update()
-
-
 ##
 # Writes a SimpleITK image object to NiftI file including both q- and s-forms.
 #
@@ -736,7 +703,7 @@ def write_nifti_image_sitk(image_sitk, path_to_file, verbose=0):
         # flag = ph.execute_command(
         #     "fslmodhd %s dim0 3" % path_to_file, verbose=debug)
     else:
-        flag = subprocess.call(["fslorient", "-copyqform2sform", path_to_file])
+        flag = apply_fslorient(path_to_file)
 
     if flag != 0:
         ph.print_warning(
@@ -751,10 +718,12 @@ def write_nifti_image_itk(image_itk, path_to_file, verbose=0):
     if verbose:
         ph.print_info("Image written to '%s' ... " % path_to_file, newline=0)
     itk.imwrite(image_itk, path_to_file)
-    flag = subprocess.call(["fslorient", "-forceradiological", path_to_file])
+    flag = apply_fslorient(path_to_file)
 
     if verbose:
         print("done")
+
+    return flag
 
 
 def write_nifti_image_nib(image_nib, path_to_file, verbose=0):
@@ -764,7 +733,7 @@ def write_nifti_image_nib(image_nib, path_to_file, verbose=0):
         ph.print_info("Image written to '%s' ... " % path_to_file, newline=0)
     nib.save(image_nib, path_to_file)
 
-    flag = subprocess.call(["fslorient", "-forceradiological", path_to_file])
+    flag = apply_fslorient(path_to_file)
 
     if flag != 0:
         ph.print_warning(
@@ -772,6 +741,38 @@ def write_nifti_image_nib(image_nib, path_to_file, verbose=0):
 
     if verbose:
         print("done")
+
+
+##
+# Update image header so that both s- and q-form information is set.
+#
+# By default, ITK only writes the q-form and s-form is set to zero. The problem
+# is that, e.g., ITK seems to prioritize the q-form whereas FSL prioritizes the
+# s-form.
+# \see        https://github.com/ANTsX/ANTs/wiki/How-does-ANTs-handle-qform-and-sform-in-NIFTI-1-images%3F
+#
+# subprocess is used to wait for the process to be finished. Resulting image
+# header format will/should be in LPI, i.e neurological (right-handed), rather
+# than RPI, i.e. radiological (left-handed) orientation
+# \date       2019-02-23 23:44:12+0000
+#
+# \param      path_to_file  The path to file
+#
+# \return     exit status
+#
+def apply_fslorient(path_to_file):
+    # TODO: Depending on the NIfTI image, either s- or q-form is set but not
+    # necessarily both. 'fslorient forceneurological/forceradiological' would
+    # do the trick to set them regardless of whether s- or q-form is given but
+    # might cause troubles as consequences are not properly tested.
+
+    # flag = subprocess.call(["fslorient", "-forceradiological", path_to_file])
+    # flag = subprocess.call(["fslorient", "-forceneurological", path_to_file])
+
+    flag = subprocess.call(["fslorient", "-copyqform2sform", path_to_file])
+
+    return flag
+
 
 ##
 # Reads a nifti image and returns sitk.Image object.
@@ -786,8 +787,6 @@ def write_nifti_image_nib(image_nib, path_to_file, verbose=0):
 #
 # \return     Nifti image as sitk.Object
 #
-
-
 def read_nifti_image_sitk(
         file_path,
         pixel_type=sitk.sitkUnknown,

@@ -16,7 +16,7 @@ import sys
 # Import modules
 import pysitk.simple_itk_helper as sitkh
 
-from pysitk.definitions import DIR_TEST
+from pysitk.definitions import DIR_TEST, DIR_TMP
 
 
 def get_registration_transform(fixed_sitk,
@@ -182,21 +182,22 @@ class SimpleItkHelperTest(unittest.TestCase):
             self.dir_test_data, self.filename_2 + ".nii.gz"),
             sitk.sitkFloat64)
 
+    def test_read_write_nifti_image_sitk(self):
+        image_sitk = sitk.ReadImage(os.path.join(
+            self.dir_test_data, self.filename + ".nii.gz"))
+        foo = os.path.join(DIR_TMP, "foo.nii.gz")
+        sitkh.write_nifti_image_sitk(image_sitk, foo)
+        foo_sitk = sitkh.read_nifti_image_sitk(foo)
+
+        nda = sitk.GetArrayFromImage(image_sitk - foo_sitk)
+        error = np.linalg.norm(nda)
+        self.assertAlmostEqual(error, 0, places=self.accuracy)
+
     def test_get_correct_itk_orientation_from_sitk_image(self):
 
         # Read image via itk
-        dimension = 3
-        pixel_type = itk.D
-        image_type = itk.Image[pixel_type, dimension]
-        reader_type = itk.ImageFileReader[image_type]
-        image_IO = itk.NiftiImageIO.New()
-
-        reader = reader_type.New()
-        reader.SetImageIO(image_IO)
-        reader.SetFileName(os.path.join(
+        image_itk = sitkh.read_itk_image(os.path.join(
             self.dir_test_data, self.filename + ".nii.gz"))
-        reader.Update()
-        image_itk = reader.GetOutput()
 
         # Change header information of sitk image
         origin = (0, 0, 0)
@@ -214,12 +215,9 @@ class SimpleItkHelperTest(unittest.TestCase):
         image_itk.SetSpacing(self.image_sitk.GetSpacing())
 
         # Write itk image and read it again as sitk image
-        writer = itk.ImageFileWriter[image_type].New()
-        writer.SetFileName("/tmp/itk_update.nii.gz")
-        writer.SetInput(image_itk)
-        writer.Update()
-
-        image_sitk_from_itk = sitk.ReadImage("/tmp/itk_update.nii.gz")
+        itk_update = os.path.join(DIR_TMP, "itk_update.nii.gz")
+        sitkh.write_nifti_image_itk(image_itk, itk_update)
+        image_sitk_from_itk = sitk.ReadImage(itk_update)
 
         # Check origin
         self.assertEqual(np.around(np.linalg.norm(
