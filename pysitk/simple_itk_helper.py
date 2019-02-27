@@ -760,7 +760,7 @@ def write_nifti_image_nib(image_nib, path_to_file, verbose=0):
 #
 # \return     exit status
 #
-def apply_fslorient(path_to_file):
+def apply_fslorient(path_to_file, verbose=False):
     # TODO: Depending on the NIfTI image, either s- or q-form is set but not
     # necessarily both. 'fslorient forceneurological/forceradiological' would
     # do the trick to set them regardless of whether s- or q-form is given but
@@ -769,7 +769,11 @@ def apply_fslorient(path_to_file):
     # flag = subprocess.call(["fslorient", "-forceradiological", path_to_file])
     # flag = subprocess.call(["fslorient", "-forceneurological", path_to_file])
 
-    flag = subprocess.call(["fslorient", "-copyqform2sform", path_to_file])
+    # Causes memory error for NiftyMIC virtual machine (avoid for now)
+    # flag = subprocess.call(["fslorient", "-copyqform2sform", path_to_file])
+
+    flag = ph.execute_command(
+        "fslorient -copyqform2sform %s" % path_to_file, verbose=verbose)
 
     return flag
 
