@@ -1707,3 +1707,42 @@ def append_to_filename(filename, suffix):
     filename_no_ext += suffix
 
     return ".".join([filename_no_ext, ext])
+
+
+##
+# Convert list of numbers into a string including hyphenated ranges, e.g. [0,
+# 1, 3, 5, 6, 7, 9, 10, 11] gets converted into '0-1, 3, 5-7, 9-11'
+# \date       2019-03-07 18:05:48+0000
+#
+# \param      numbers_list  The numbers list
+# \see        https://stackoverflow.com/questions/29418693/write-ranges-of-numbers-with-dashes/29418827
+#
+# \return     hyphenated ranges, str.
+#
+def convert_numbers_to_hyphenated_ranges(numbers_list):
+    seq = []
+    final = []
+    last = 0
+
+    for index, val in enumerate(sorted(numbers_list)):
+
+        if last + 1 == val or index == 0:
+            seq.append(val)
+            last = val
+        else:
+            if len(seq) > 1:
+                final.append(str(seq[0]) + '-' + str(seq[len(seq) - 1]))
+            else:
+                final.append(str(seq[0]))
+            seq = []
+            seq.append(val)
+            last = val
+
+        if index == len(numbers_list) - 1:
+            if len(seq) > 1:
+                final.append(str(seq[0]) + '-' + str(seq[len(seq) - 1]))
+            else:
+                final.append(str(seq[0]))
+
+    final_str = ', '.join(map(str, final))
+    return final_str
