@@ -127,6 +127,22 @@ def file_exists(file_path):
 
 
 ##
+# Determines whether input value can be converted to a float
+# \date       2019-03-23 23:26:51+0000
+#
+# \param      value  input value
+#
+# \return     True if float, False otherwise.
+#
+def is_float(value):
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+
+
+##
 # Check whether directory exists to given directory path
 # \date       2017-06-27 01:53:20+0100
 #
@@ -1279,6 +1295,7 @@ def print_line_separator(add_newline=True, symbol="*", length=99):
 
 
 def print_execution(cmd):
+    cmd = re.sub(" --", " \\\n--", cmd)
     print("")
     print("---- Executed command: ----")
     print(cmd)
