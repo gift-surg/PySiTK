@@ -149,8 +149,10 @@ class DataAnonymizer(object):
     # Writes a dictionary.
     # \date       2016-12-06 19:26:22+0000
     #
-    # \param      directory  The directory
-    # \param      filename   The filename without extension
+    # \param      self             The object
+    # \param      path_to_file     The path to file (".o" extension)
+    # \param      filename_backup  The filename backup
+    # \param      verbose          The verbose
     #
     def write_dictionary(self,
                          path_to_file,
