@@ -1157,17 +1157,16 @@ def _get_grid_size(N_slices):
 # Saves a figure to given directory
 # \date       2017-02-07 10:19:09+0000
 #
-# \param      fig        The fig
-# \param      directory  The directory
-# \param      filename   The filename including filename extension
+# \param      fig           The fig
+# \param      path_to_file  The path to file
 #
-def save_fig(fig, directory, filename):
+def save_fig(fig, path_to_file):
 
+    directory = os.path.dirname(path_to_file)
     create_directory(directory)
 
-    path_to_file = os.path.join(directory, filename)
     fig.savefig(path_to_file)
-    print_info("Figure was saved to %s" % path_to_file)
+    print_info("Figure was saved to '%s'" % path_to_file)
 
 
 ##
