@@ -45,30 +45,40 @@ COLORS_STANDARD = [
 ]
 
 
+# Used for (box plot) texture/hatches
+HATCHES = [
+    "/",
+    ".",
+    "o",
+    "//",
+    "\\",
+]
+
 # https://matplotlib.org/users/colormaps.html
 # COLORS_TAB20 = [matplotlib.cm.tab20(x/10.) for x in range(0, 10)]
 # Tableau20
 COLORS_TABLEAU20 = np.array([
-    (31, 119, 180),
+    (31, 119, 180),     # blue
     (174, 199, 232),
-    (255, 127, 14),
+    (255, 127, 14),     # orange
     (255, 187, 120),
-    (44, 160, 44),
+    (44, 160, 44),      # green
     (152, 223, 138),
-    (214, 39, 40),
+    (214, 39, 40),      # red
     (255, 152, 150),
-    (148, 103, 189),
+    (148, 103, 189),    # purple
     (197, 176, 213),
-    (140, 86, 75),
+    (140, 86, 75),      # brown
     (196, 156, 148),
-    (227, 119, 194),
+    (227, 119, 194),    # pink
     (247, 182, 210),
-    (127, 127, 127),
+    (127, 127, 127),    # grey
     (199, 199, 199),
-    (188, 189, 34),
+    (188, 189, 34),     # "dirty" yellow
     (219, 219, 141),
-    (23, 190, 207),
-    (158, 218, 229)]) / 255.
+    (23, 190, 207),     # cyan
+    (158, 218, 229),
+]) / 255.
 COLORS = COLORS_TABLEAU20
 
 MARKERS = [
@@ -1147,17 +1157,16 @@ def _get_grid_size(N_slices):
 # Saves a figure to given directory
 # \date       2017-02-07 10:19:09+0000
 #
-# \param      fig        The fig
-# \param      directory  The directory
-# \param      filename   The filename including filename extension
+# \param      fig           The fig
+# \param      path_to_file  The path to file
 #
-def save_fig(fig, directory, filename):
+def save_fig(fig, path_to_file):
 
+    directory = os.path.dirname(path_to_file)
     create_directory(directory)
 
-    path_to_file = os.path.join(directory, filename)
     fig.savefig(path_to_file)
-    print_info("Figure was saved to %s" % path_to_file)
+    print_info("Figure was saved to '%s'" % path_to_file)
 
 
 ##
@@ -1410,6 +1419,22 @@ def delete_file(path_to_file, verbose=True):
     os.remove(path_to_file)
     if verbose:
         print_info("File '%s' deleted." % path_to_file)
+
+
+##
+# Copy a file
+# \date       2019-04-09 10:29:08+0100
+#
+# \param      path_to_src  The path to the source file
+# \param      path_to_dst  Can be a path to a file or a directory (in which
+#                          case the basename of src will be used as basename
+#                          for the file at dst)
+#
+#
+def copy_file(path_to_src, path_to_dst, verbose=True):
+    shutil.copy2(path_to_src, path_to_dst)
+    if verbose:
+        print_info("File '%s' copied to '%s'" % (path_to_src, path_to_dst))
 
 
 ##

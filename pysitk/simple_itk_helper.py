@@ -1423,7 +1423,8 @@ def write_executable_file(cmds,
     date_time += str(now.hour).zfill(2) + ":" + \
         str(now.minute).zfill(2) + ":" + str(now.second).zfill(2)
 
-    dir_output_file = "./"
+    # dir_output_file = "./"
+    dir_output_file = 'os.path.dirname(os.path.abspath(__file__)) + "/"'
 
     # Substitute commands
     for i in range(0, len(cmds)):
@@ -1453,7 +1454,9 @@ def write_executable_file(cmds,
     call += "\n"
     call += "\n"
     call += "# Path to image data directory relative to this file:\n"
-    call += "directory = " + '"' + dir_output_file + '"'
+    call += "directory = " + dir_output_file
+    call += "\n"
+    call += "# directory = " + '"./"'
     call += "\n\n"
     call += "# Define executables:"
     call += "\n"
