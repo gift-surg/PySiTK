@@ -1422,6 +1422,22 @@ def delete_file(path_to_file, verbose=True):
 
 
 ##
+# Copy a file
+# \date       2019-04-09 10:29:08+0100
+#
+# \param      path_to_src  The path to the source file
+# \param      path_to_dst  Can be a path to a file or a directory (in which
+#                          case the basename of src will be used as basename
+#                          for the file at dst)
+#
+#
+def copy_file(path_to_src, path_to_dst, verbose=True):
+    shutil.copy2(path_to_src, path_to_dst)
+    if verbose:
+        print_info("File '%s' copied to '%s'" % (path_to_src, path_to_dst))
+
+
+##
 # Gets the current date in format year, month and day
 # \date       2017-08-08 16:34:17+0100
 #
