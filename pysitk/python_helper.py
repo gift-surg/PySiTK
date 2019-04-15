@@ -1160,12 +1160,12 @@ def _get_grid_size(N_slices):
 # \param      fig           The fig
 # \param      path_to_file  The path to file
 #
-def save_fig(fig, path_to_file):
+def save_fig(fig, path_to_file, transparent=True):
 
     directory = os.path.dirname(path_to_file)
     create_directory(directory)
 
-    fig.savefig(path_to_file)
+    fig.savefig(path_to_file, transparent=transparent)
     print_info("Figure was saved to '%s'" % path_to_file)
 
 
