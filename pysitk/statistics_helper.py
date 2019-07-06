@@ -92,6 +92,7 @@ def write_array_to_latex(
         row_title=None,
         decimal_places=2,
         compact=False,
+        nda_bold=None,
         mark_best=None,
         verbose=True,
 ):
@@ -100,6 +101,9 @@ def write_array_to_latex(
     sep = " & "
     newline = " \\\\\n"
     nan_symbol = "---"
+
+    if mark_best is not None and nda_bold is not None:
+        raise ValueError("Either 'mark_best' or 'nda_bold' but not both.")
 
     # Mark best row values bold (ties are allowed)
     if mark_best is not None:
@@ -195,6 +199,11 @@ def write_array_to_latex(
         if mark_best:
             for j in i_j_best[i_row]:
                 line_args[j] = "\\bf %s" % line_args[j]
+
+        if nda_bold is not None:
+            for j in range(nda_bold.shape[1]):
+                if nda_bold[i_row, j]:
+                    line_args[j] = "\\bf %s" % line_args[j]
 
         if rows is not None:
             line_args.insert(0, "\\bf %s" % rows[i_row])
