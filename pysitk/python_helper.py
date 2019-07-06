@@ -1446,12 +1446,26 @@ def delete_file(path_to_file, verbose=True):
 # \param      path_to_dst  Can be a path to a file or a directory (in which
 #                          case the basename of src will be used as basename
 #                          for the file at dst)
-#
+# \param      verbose      The verbose
 #
 def copy_file(path_to_src, path_to_dst, verbose=True):
     shutil.copy2(path_to_src, path_to_dst)
     if verbose:
         print_info("File '%s' copied to '%s'" % (path_to_src, path_to_dst))
+
+
+##
+# Move a file
+# \date       2019-05-19 23:30:33-0400
+#
+# \param      path_to_src  The path to the source file
+# \param      path_to_dst  The path to destination
+# \param      verbose      The verbose
+#
+def move_file(path_to_src, path_to_dst, verbose=True):
+    shutil.move(path_to_src, path_to_dst)
+    if verbose:
+        print_info("File '%s' moved to '%s'" % (path_to_src, path_to_dst))
 
 
 ##
