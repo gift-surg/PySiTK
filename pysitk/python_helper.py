@@ -398,8 +398,17 @@ def niftyview(path_to_filename):
 # \param      viewer            The viewer; either "fsleyes", "itksnap" or
 #                               "niftyview"
 #
-def show_nifti(path_to_filename, viewer=VIEWER, segmentation=None):
-    show_niftis([path_to_filename], viewer=viewer, segmentation=segmentation)
+def show_nifti(
+        path_to_filename,
+        viewer=VIEWER,
+        segmentation=None,
+        verbose=True,
+):
+    show_niftis(
+        [path_to_filename],
+        viewer=viewer,
+        segmentation=segmentation,
+        verbose=verbose)
 
 
 ##
@@ -410,10 +419,15 @@ def show_nifti(path_to_filename, viewer=VIEWER, segmentation=None):
 # \param      viewer            The viewer; either "fsleyes", "itksnap" or
 #                               "niftyview"
 #
-def show_niftis(paths_to_filenames, viewer=VIEWER, segmentation=None):
+def show_niftis(
+    paths_to_filenames,
+    viewer=VIEWER,
+    segmentation=None,
+    verbose=True,
+):
     cmd = globals()["get_function_call_" + viewer](
         paths_to_filenames, segmentation)
-    return execute_command(cmd)
+    return execute_command(cmd, verbose=verbose)
 
 
 ##
