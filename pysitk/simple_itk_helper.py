@@ -10,6 +10,7 @@
 import re
 import os
 import itk
+import six
 import fnmatch
 import datetime
 import subprocess
@@ -679,14 +680,24 @@ def write_sitk_vector_image(vector_image_sitk, filename):
 #
 # By default, ITK only writes the q-form and s-form is set to zero. The problem
 # is that, e.g., ITK seems to prioritize the q-form whereas FSL prioritizes the
-# s-form.
+# s-form. Additionally, NIfTI header updates can be performed
+#
 # \see        https://github.com/ANTsX/ANTs/wiki/How-does-ANTs-handle-qform-and-sform-in-NIFTI-1-images%3F
+# \see        https://nifti.nimh.nih.gov/nifti-1/documentation/nifti1fields
 # \date       2017-11-03 16:03:10+0000
 #
-# \param      image_sitk    Image as sitk.Image object
-# \param      path_to_file  path to filename
+# \param      image_sitk     Image as sitk.Image object
+# \param      path_to_file   path to filename
+# \param      verbose        The verbose
+# \param      header_update  dictionary that carries NIfTI header information
+#                            updates
 #
-def write_nifti_image_sitk(image_sitk, path_to_file, verbose=0):
+def write_nifti_image_sitk(
+    image_sitk,
+    path_to_file,
+    verbose=False,
+    header_update=None,
+):
 
     ph.create_directory(os.path.dirname(path_to_file))
     if verbose:
@@ -703,22 +714,7 @@ def write_nifti_image_sitk(image_sitk, path_to_file, verbose=0):
         # flag = ph.execute_command(
         #     "fslmodhd %s dim0 3" % path_to_file, verbose=debug)
     else:
-        flag = apply_fslorient(path_to_file)
-
-    if flag != 0:
-        ph.print_warning(
-            "Only q-form is set as fslorient was not successful!")
-
-    if verbose:
-        print("done")
-
-
-def write_nifti_image_itk(image_itk, path_to_file, verbose=0):
-    ph.create_directory(os.path.dirname(path_to_file))
-    if verbose:
-        ph.print_info("Image written to '%s' ... " % path_to_file, newline=0)
-    itk.imwrite(image_itk, path_to_file)
-    flag = apply_fslorient(path_to_file)
+        flag = apply_header_update(path_to_file, header_update=header_update)
 
     if verbose:
         print("done")
@@ -726,21 +722,42 @@ def write_nifti_image_itk(image_itk, path_to_file, verbose=0):
     return flag
 
 
-def write_nifti_image_nib(image_nib, path_to_file, verbose=0):
+def write_nifti_image_itk(
+    image_itk,
+    path_to_file,
+    verbose=False,
+    header_update=None,
+):
+    ph.create_directory(os.path.dirname(path_to_file))
+    if verbose:
+        ph.print_info("Image written to '%s' ... " % path_to_file, newline=0)
+    itk.imwrite(image_itk, path_to_file)
+    flag = apply_header_update(path_to_file, header_update=header_update)
+
+    if verbose:
+        print("done")
+
+    return flag
+
+
+def write_nifti_image_nib(
+    image_nib,
+    path_to_file,
+    verbose=False,
+    header_update=None,
+):
 
     ph.create_directory(os.path.dirname(path_to_file))
     if verbose:
         ph.print_info("Image written to '%s' ... " % path_to_file, newline=0)
     nib.save(image_nib, path_to_file)
 
-    flag = apply_fslorient(path_to_file)
-
-    if flag != 0:
-        ph.print_warning(
-            "Only q-form is set as fslorient was not successful!")
+    flag = apply_header_update(path_to_file, header_update=header_update)
 
     if verbose:
         print("done")
+
+    return flag
 
 
 ##
@@ -757,10 +774,13 @@ def write_nifti_image_nib(image_nib, path_to_file, verbose=0):
 # \date       2019-02-23 23:44:12+0000
 #
 # \param      path_to_file  The path to file
+# \param      verbose       The verbose
+# \param      header_update   dictionary that carries NIfTI header information
+#                           updates
 #
 # \return     exit status
 #
-def apply_fslorient(path_to_file, verbose=False):
+def apply_header_update(path_to_file, verbose=False, header_update=None):
     # TODO: Depending on the NIfTI image, either s- or q-form is set but not
     # necessarily both. 'fslorient forceneurological/forceradiological' would
     # do the trick to set them regardless of whether s- or q-form is given but
@@ -774,6 +794,19 @@ def apply_fslorient(path_to_file, verbose=False):
 
     flag = ph.execute_command(
         "fslorient -copyqform2sform %s" % path_to_file, verbose=verbose)
+
+    if flag != 0:
+        ph.print_warning(
+            "Only q-form is set as fslorient was not successful!")
+
+    # Update NIfTI image header
+    # (FSL modhd overwrites 'descript' field with their version by default;
+    # thus use nibabel instead)
+    if header_update is not None:
+        image_nib = nib.load(path_to_file)
+        for k, v in six.iteritems(header_update):
+            image_nib.header[k] = v
+        nib.save(image_nib, path_to_file)
 
     return flag
 

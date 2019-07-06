@@ -50,8 +50,11 @@ HATCHES = [
     "/",
     ".",
     "o",
-    "//",
     "\\",
+    "*",
+    "x",
+    "//",
+    "///",
 ]
 
 # https://matplotlib.org/users/colormaps.html
@@ -68,16 +71,16 @@ COLORS_TABLEAU20 = np.array([
     (255, 152, 150),
     (148, 103, 189),    # purple
     (197, 176, 213),
+    (127, 127, 127),    # grey
+    (199, 199, 199),
+    (23, 190, 207),     # cyan
+    (158, 218, 229),
     (140, 86, 75),      # brown
     (196, 156, 148),
     (227, 119, 194),    # pink
     (247, 182, 210),
-    (127, 127, 127),    # grey
-    (199, 199, 199),
     (188, 189, 34),     # "dirty" yellow
     (219, 219, 141),
-    (23, 190, 207),     # cyan
-    (158, 218, 229),
 ]) / 255.
 COLORS = COLORS_TABLEAU20
 
@@ -395,8 +398,17 @@ def niftyview(path_to_filename):
 # \param      viewer            The viewer; either "fsleyes", "itksnap" or
 #                               "niftyview"
 #
-def show_nifti(path_to_filename, viewer=VIEWER, segmentation=None):
-    show_niftis([path_to_filename], viewer=viewer, segmentation=segmentation)
+def show_nifti(
+        path_to_filename,
+        viewer=VIEWER,
+        segmentation=None,
+        verbose=True,
+):
+    show_niftis(
+        [path_to_filename],
+        viewer=viewer,
+        segmentation=segmentation,
+        verbose=verbose)
 
 
 ##
@@ -407,10 +419,15 @@ def show_nifti(path_to_filename, viewer=VIEWER, segmentation=None):
 # \param      viewer            The viewer; either "fsleyes", "itksnap" or
 #                               "niftyview"
 #
-def show_niftis(paths_to_filenames, viewer=VIEWER, segmentation=None):
+def show_niftis(
+    paths_to_filenames,
+    viewer=VIEWER,
+    segmentation=None,
+    verbose=True,
+):
     cmd = globals()["get_function_call_" + viewer](
         paths_to_filenames, segmentation)
-    return execute_command(cmd)
+    return execute_command(cmd, verbose=verbose)
 
 
 ##
@@ -1160,12 +1177,12 @@ def _get_grid_size(N_slices):
 # \param      fig           The fig
 # \param      path_to_file  The path to file
 #
-def save_fig(fig, path_to_file):
+def save_fig(fig, path_to_file, transparent=True):
 
     directory = os.path.dirname(path_to_file)
     create_directory(directory)
 
-    fig.savefig(path_to_file)
+    fig.savefig(path_to_file, transparent=transparent)
     print_info("Figure was saved to '%s'" % path_to_file)
 
 
@@ -1429,12 +1446,26 @@ def delete_file(path_to_file, verbose=True):
 # \param      path_to_dst  Can be a path to a file or a directory (in which
 #                          case the basename of src will be used as basename
 #                          for the file at dst)
-#
+# \param      verbose      The verbose
 #
 def copy_file(path_to_src, path_to_dst, verbose=True):
     shutil.copy2(path_to_src, path_to_dst)
     if verbose:
         print_info("File '%s' copied to '%s'" % (path_to_src, path_to_dst))
+
+
+##
+# Move a file
+# \date       2019-05-19 23:30:33-0400
+#
+# \param      path_to_src  The path to the source file
+# \param      path_to_dst  The path to destination
+# \param      verbose      The verbose
+#
+def move_file(path_to_src, path_to_dst, verbose=True):
+    shutil.move(path_to_src, path_to_dst)
+    if verbose:
+        print_info("File '%s' moved to '%s'" % (path_to_src, path_to_dst))
 
 
 ##

@@ -1,5 +1,6 @@
 
 import re
+import six
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -73,8 +74,13 @@ def get_arrays_from_data_dic(data_dic):
 # \param      row_title       additional 'row title', i.e. left-upper corner,
 #                             string
 # \param      decimal_places  Number of decimal places to be printed, integer
-# \param      verbose         verbose output, bool
 # \param      compact         compact style, i.e. remove white spaces, bool
+# \param      mark_best       List (or single string) indicating 'best' values
+#                             per row, e.g. mark_best=["max", "max", "min"] or
+#                             mark_best="max"; list length must match
+#                             len(cols); best values (as well as ties) will be
+#                             shown in bold
+# \param      verbose         verbose output, bool
 #
 def write_array_to_latex(
         path_to_file,
@@ -85,14 +91,55 @@ def write_array_to_latex(
         cols=None,
         row_title=None,
         decimal_places=2,
-        verbose=1,
         compact=False,
+        nda_bold=None,
+        mark_best=None,
+        verbose=True,
 ):
 
     lines = []
     sep = " & "
     newline = " \\\\\n"
     nan_symbol = "---"
+
+    if mark_best is not None and nda_bold is not None:
+        raise ValueError("Either 'mark_best' or 'nda_bold' but not both.")
+
+    # Mark best row values bold (ties are allowed)
+    if mark_best is not None:
+        e = "'mark_best' must be either a list with " \
+            "'min' or 'max' as elements with len(mark_best) == len(cols), " \
+            "or a single string being either 'min' or 'max'"
+        if type(mark_best) is not list:
+            if mark_best != "min" and mark_best != "max":
+                raise ValueError(e)
+            mark_best = [mark_best] * len(cols)
+        else:
+            if len(mark_best) != len(cols):
+                raise ValueError(e)
+            if not all(m in ["min", "max"] for m in mark_best):
+                raise ValueError(e)
+
+        # round to output decimal places
+        nda_ = nda.round(decimal_places)
+
+        # find best values along rows per column
+        i_best = []
+        for j in range(nda.shape[1]):
+            topper = getattr(np, "arg%s" % mark_best[j])(nda_[:, j])
+            i_best.append(topper)
+
+        # find 'ties' that have the same value within each column
+        j_i_best = {
+            j: np.where(nda_[:, j] == nda_[i_best[j], j])[0]
+            for j in range(nda.shape[1])
+        }
+
+        # reverse mapping for easier access later
+        i_j_best = {i: [] for i in range(nda.shape[0])}
+        for j, i_list in six.iteritems(j_i_best):
+            for i in i_list:
+                i_j_best[i].append(j)
 
     # Statistical significance (only printed if nda_sig given)
     sym = "$^*$"
@@ -124,7 +171,6 @@ def write_array_to_latex(
 
     # Entries of the table
     for i_row in range(nda.shape[0]):
-        line_args = []
         if nda_std is None:
             line_args = [
                 # "\\num{%s}" % (
@@ -149,6 +195,16 @@ def write_array_to_latex(
             if compact:
                 # remove white spaces
                 line_args = [re.sub(" ", "", l) for l in line_args]
+
+        if mark_best:
+            for j in i_j_best[i_row]:
+                line_args[j] = "\\bf %s" % line_args[j]
+
+        if nda_bold is not None:
+            for j in range(nda_bold.shape[1]):
+                if nda_bold[i_row, j]:
+                    line_args[j] = "\\bf %s" % line_args[j]
+
         if rows is not None:
             line_args.insert(0, "\\bf %s" % rows[i_row])
         lines.append("%s%s" % (sep.join(line_args), newline))
@@ -473,9 +529,9 @@ def show_bland_altman_plot(
 
     if non_parametric:
         labels = ["Median", "95% LoA"]
-        mid = np.median(x-y)
-        upper = np.percentile(x-y, 97.5)
-        lower = np.percentile(x-y, 2.5)
+        mid = np.median(x - y)
+        upper = np.percentile(x - y, 97.5)
+        lower = np.percentile(x - y, 2.5)
     else:
         labels = ["Mean", "95% LoA"]
         # Mean and mean +- 1.96 sigma helper lines
