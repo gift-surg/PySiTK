@@ -643,7 +643,12 @@ def get_sitk_vector_image_from_components(image_components_sitk):
 # \param      filename           filename path to write image ("nii" or
 #                                ".nii.gz")
 #
-def write_sitk_vector_image(vector_image_sitk, filename):
+def write_sitk_vector_image(
+    vector_image_sitk,
+    filename,
+    verbose=True,
+    header_update=None,
+):
     R = np.array([
         [-1, 0, 0],
         [0, -1, 0],
@@ -671,8 +676,16 @@ def write_sitk_vector_image(vector_image_sitk, filename):
             nda_nib[i, :, k, :] = nda[k, :, i, :]
 
     image_nib = nib.Nifti1Pair(nda_nib, A_nib)
+
+    # Update NIfTI image header
+    if header_update is not None:
+        for k, v in six.iteritems(header_update):
+            image_nib.header[k] = v
+
     nib.save(image_nib, filename)
-    ph.print_info("Vector image written to '%s'." % (filename))
+
+    if verbose:
+        ph.print_info("Vector image written to '%s'." % (filename))
 
 
 ##
