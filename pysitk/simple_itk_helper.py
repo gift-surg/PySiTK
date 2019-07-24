@@ -535,7 +535,7 @@ def read_itk_image(filename):
 #
 # \return     (Multi-component) sitk.Image object
 #
-def read_sitk_vector_image(filename, dtype=np.float64):
+def read_sitk_vector_image(filename):
 
     # Workaround: Read vector image via nibabel
     image_nib = nib.load(filename)
@@ -545,7 +545,7 @@ def read_sitk_vector_image(filename, dtype=np.float64):
                     nda_nib_shape[1],
                     nda_nib_shape[0],
                     nda_nib_shape[3]),
-                   dtype=dtype)
+                   dtype=image_nib.header["bitpix"].dtype)
 
     # Convert to (Simple)ITK data array format, i.e. reorder to
     # z-y-x-components shape
@@ -556,27 +556,44 @@ def read_sitk_vector_image(filename, dtype=np.float64):
     # Get SimpleITK image
     vector_image_sitk = sitk.GetImageFromArray(nda)
 
-    # Workaround: Update header from nibabel information
-    R = np.array([
-        [-1, 0, 0],
-        [0, -1, 0],
-        [0, 0, 1]])
-    affine_nib = image_nib.affine
-    R_nib = affine_nib[0:-1, 0:-1]
+    if 1:
+        # Update header from nibabel information
+        # (may introduce some header inaccuracies?)
+        R = np.array([
+            [-1, 0, 0],
+            [0, -1, 0],
+            [0, 0, 1]])
+        affine_nib = image_nib.affine.astype(np.float64)
+        R_nib = affine_nib[0:-1, 0:-1]
 
-    # Get spacing (only for image dimensions, i.e. not for the vector
-    # component)
-    spacing_sitk = np.array(image_nib.header.get_zooms())[0:R_nib.shape[0]]
-    S_nib_inv = np.diag(1 / spacing_sitk)
+        spacing_sitk = np.array(image_nib.header.get_zooms(), dtype=np.float64)
+        spacing_sitk = spacing_sitk[0:R_nib.shape[0]]
+        S_nib_inv = np.diag(1. / spacing_sitk)
 
-    direction_sitk = R.dot(R_nib).dot(S_nib_inv).flatten()
+        direction_sitk = R.dot(R_nib).dot(S_nib_inv).flatten()
 
-    t_nib = affine_nib[0:-1, 3]
-    origin_sitk = R.dot(t_nib)
+        t_nib = affine_nib[0:-1, 3]
+        origin_sitk = R.dot(t_nib)
 
-    vector_image_sitk.SetSpacing(np.array(spacing_sitk).astype('double'))
-    vector_image_sitk.SetDirection(direction_sitk)
-    vector_image_sitk.SetOrigin(origin_sitk)
+        vector_image_sitk.SetSpacing(np.array(spacing_sitk).astype('double'))
+        vector_image_sitk.SetDirection(direction_sitk)
+        vector_image_sitk.SetOrigin(origin_sitk)
+    else:
+        # Extract header information from SimpleITK vector image
+        # (slower for many components)
+        dim = 4
+        dummy_sitk = sitk.ReadImage(filename)
+
+        direction_sitk = np.array(dummy_sitk.GetDirection()).reshape(dim, dim)
+        direction_sitk = direction_sitk[0:-1, 0:-1].flatten()
+
+        spacing_sitk = dummy_sitk.GetSpacing()[0:-1]
+
+        origin_sitk = dummy_sitk.GetOrigin()[0:-1]
+
+        vector_image_sitk.SetSpacing(spacing_sitk)
+        vector_image_sitk.SetDirection(direction_sitk)
+        vector_image_sitk.SetOrigin(origin_sitk)
 
     return vector_image_sitk
 
@@ -621,13 +638,16 @@ def get_sitk_vector_image_from_components(image_components_sitk):
     N_components = len(image_components_sitk)
     shape = image_components_sitk[0].GetSize()
 
-    vector_image_nda = np.zeros((shape[2], shape[1], shape[0], N_components))
+    # Create array using same data type
+    dtype = sitk.GetArrayFromImage(image_components_sitk[0]).dtype
+    vector_image_nda = np.zeros(
+        (shape[2], shape[1], shape[0], N_components), dtype=dtype)
+
     for i in range(N_components):
         vector_image_nda[:, :, :, i] = sitk.GetArrayFromImage(
-            image_components_sitk[i])
+            image_components_sitk[i]).astype(dtype)
 
     vector_image_sitk = sitk.GetImageFromArray(vector_image_nda)
-
     vector_image_sitk.SetSpacing(image_components_sitk[0].GetSpacing())
     vector_image_sitk.SetDirection(image_components_sitk[0].GetDirection())
     vector_image_sitk.SetOrigin(image_components_sitk[0].GetOrigin())
@@ -649,6 +669,8 @@ def write_sitk_vector_image(
     verbose=True,
     header_update=None,
 ):
+    # Use nib to generate a (nx, ny, nz, n) image, i.e. 4D.
+    # In contrast, sitk would generate a (nx, ny, nz, 1, n) one, i.e. 5D.
     R = np.array([
         [-1, 0, 0],
         [0, -1, 0],
@@ -667,7 +689,8 @@ def write_sitk_vector_image(
 
     nda = sitk.GetArrayFromImage(vector_image_sitk)
     shape = nda.shape
-    nda_nib = np.zeros((shape[2], shape[1], shape[0], shape[3]))
+    nda_nib = np.zeros((shape[2], shape[1], shape[0], shape[3]),
+                       dtype=nda.dtype)
 
     # Convert to Nibabel data array format, i.e. reorder to x-y-z-components
     # shape
