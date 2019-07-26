@@ -528,24 +528,24 @@ def read_itk_image(filename):
 # Reads 3D vector image and return as SimpleITK image
 # \date       2016-09-20 15:31:05+0100
 #
-# \param      filename             The filename
-# \param      return_vector_index  Index/Component of vector image to be
-#                                  returned. If 'None' the entire vector image
-#                                  is returned
+# \param      filename  path to file, string
+# \param      dtype     numpy data type
 #
 # \return     (Multi-component) sitk.Image object
 #
-def read_sitk_vector_image(filename):
+def read_sitk_vector_image(filename, dtype=None):
 
     # Workaround: Read vector image via nibabel
     image_nib = nib.load(filename)
-    nda_nib = image_nib.get_data()
+    if dtype is None:
+        dtype = image_nib.header["bitpix"].dtype
+    nda_nib = image_nib.get_data().astype(dtype)
     nda_nib_shape = nda_nib.shape
     nda = np.zeros((nda_nib_shape[2],
                     nda_nib_shape[1],
                     nda_nib_shape[0],
                     nda_nib_shape[3]),
-                   dtype=image_nib.header["bitpix"].dtype)
+                   dtype=dtype)
 
     # Convert to (Simple)ITK data array format, i.e. reorder to
     # z-y-x-components shape
