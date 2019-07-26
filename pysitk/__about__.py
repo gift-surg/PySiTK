@@ -1,6 +1,6 @@
 __title__ = "PySiTK"
 __author__ = "Michael Ebner"
-__email__ = "michael.ebner.14@ucl.ac.uk"
+__email__ = "michael.ebner@kcl.ac.uk"
 __license__ = "BSD-3-Clause"
 __summary__ = "PySiTK is a research-focused toolkit containing a " \
     "collection of Python helper functions. In particular it facilitates " \
