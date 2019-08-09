@@ -479,19 +479,19 @@ def make_file_executable(path_to_file):
 def get_function_call_itksnap(filenames, filename_segmentation=None):
 
     cmd = ITKSNAP_EXE + " -g \\\n"
-    cmd += filenames[0] + " \\\n"
+    cmd += "'" + filenames[0] + "' \\\n"
 
     # Add overlays
     if len(filenames) > 1:
         cmd += "-o \\\n"
 
         for i in range(1, len(filenames)):
-            cmd += filenames[i] + " \\\n"
+            cmd += "'" + filenames[i] + "' \\\n"
 
     # Add segmentation
     if filename_segmentation is not None:
         cmd += "-s \\\n"
-        cmd += filename_segmentation + " \\\n"
+        cmd += "'" + filename_segmentation + "' \\\n"
 
     # Add termination
     cmd += "&"
@@ -513,10 +513,11 @@ def get_function_call_fsleyes(filenames, filename_segmentation=None):
 
     cmd = FSLVIEW_EXE + " \\\n"
     for i in range(0, len(filenames)):
-        cmd += filenames[i] + " \\\n"
+        cmd += "'" + filenames[i] + "' \\\n"
 
     if filename_segmentation is not None:
-        cmd += filename_segmentation + " --alpha 30 -cm hsv \\\n"
+        cmd += "'" + filename_segmentation + "' \\\n"
+        cmd += "--alpha 30 -cm hsv \\\n"
 
     cmd += "&"
 
@@ -537,10 +538,11 @@ def get_function_call_fslview(filenames, filename_segmentation=None):
 
     cmd = FSLVIEW_EXE + " \\\n"
     for i in range(0, len(filenames)):
-        cmd += filenames[i] + " \\\n"
+        cmd += "'" + filenames[i] + "' \\\n"
 
     if filename_segmentation is not None:
-        cmd += filename_segmentation + " -t 0.3 \\\n"
+        cmd += "'" + filename_segmentation + "' \\\n"
+        cmd += "-t 0.3 \\\n"
 
     cmd += "&"
 
@@ -561,10 +563,10 @@ def get_function_call_niftyview(filenames, filename_segmentation=None):
 
     cmd = NIFTYVIEW_EXE + " \\\n"
     for i in range(0, len(filenames)):
-        cmd += filenames[i] + " \\\n"
+        cmd += "'" + filenames[i] + "' \\\n"
 
     if filename_segmentation is not None:
-        cmd += filename_segmentation + " \\\n"
+        cmd += "'" + filename_segmentation + "' \\\n"
 
     cmd += "&"
 
