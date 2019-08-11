@@ -829,7 +829,7 @@ def apply_header_update(path_to_file, verbose=False, header_update=None):
     # flag = subprocess.call(["fslorient", "-copyqform2sform", path_to_file])
 
     flag = ph.execute_command(
-        "fslorient -copyqform2sform %s" % path_to_file, verbose=verbose)
+        "fslorient -copyqform2sform '%s'" % path_to_file, verbose=verbose)
 
     if flag != 0:
         ph.print_warning(
